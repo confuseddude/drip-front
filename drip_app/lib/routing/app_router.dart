@@ -1,0 +1,172 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../features/activity/activity_screen.dart';
+import '../features/create/create_ootd_screen.dart';
+import '../features/discover/discover_screen.dart';
+import '../features/home/home_screen.dart';
+import '../features/home/ootd_viewer_screen.dart';
+import '../features/onboarding/colour_theory_screen.dart';
+import '../features/onboarding/follow_people_screen.dart';
+import '../features/onboarding/intro_screen.dart';
+import '../features/onboarding/style_quiz_screen.dart';
+import '../features/onboarding/welcome_screen.dart';
+import '../features/onboarding/youre_in_screen.dart';
+import '../features/outfits/outfit_detail_screen.dart';
+import '../features/photoshoot/photoshoot_result_screen.dart';
+import '../features/photoshoot/photoshoot_screen.dart';
+import '../features/profile/colour_theory_profile_screen.dart';
+import '../features/profile/my_profile_screen.dart';
+import '../features/profile/public_profile_screen.dart';
+import '../features/search/search_results_screen.dart';
+import '../features/search/search_screen.dart';
+import '../features/session/session_controller.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/social/followers_screen.dart';
+import '../features/splash/splash_screen.dart';
+import '../features/studio/outfit_builder_screen.dart';
+import '../features/studio/studio_home_screen.dart';
+import '../features/stylist/taylor_result_screen.dart';
+import '../features/stylist/taylor_screen.dart';
+import '../features/wardrobe/add_to_wardrobe_screen.dart';
+import '../features/wardrobe/item_detail_screen.dart';
+import '../features/wardrobe/saved_outfits_screen.dart';
+import '../features/wardrobe/wardrobe_screen.dart';
+import 'main_shell.dart';
+
+/// Route paths.
+abstract final class Routes {
+  static const splash = '/splash';
+  static const welcome = '/welcome';
+  static const intro = '/onboarding/intro';
+  static const quiz = '/onboarding/quiz';
+  static const colour = '/onboarding/colour';
+  static const follow = '/onboarding/follow';
+  static const done = '/onboarding/done';
+  static const home = '/home';
+}
+
+/// Page with the app's standard transition: a short fade + rise.
+CustomTransitionPage<void> dripPage(
+  GoRouterState state,
+  Widget child, {
+  bool fade = false,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondary, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      if (fade) return FadeTransition(opacity: curved, child: child);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.03),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+class _SessionRefresh extends ChangeNotifier {
+  _SessionRefresh(Ref ref) {
+    ref.listen(sessionProvider, (_, _) => notifyListeners());
+  }
+}
+
+GoRoute _page(
+  String path,
+  Widget Function(GoRouterState) build, {
+  bool fade = false,
+}) => GoRoute(
+  path: path,
+  pageBuilder: (context, state) => dripPage(state, build(state), fade: fade),
+);
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = _SessionRefresh(ref);
+  ref.onDispose(refresh.dispose);
+
+  return GoRouter(
+    initialLocation: Routes.splash,
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final signedIn = ref.read(sessionProvider).signedIn;
+      final loc = state.matchedLocation;
+      final public =
+          loc == Routes.splash ||
+          loc == Routes.welcome ||
+          loc.startsWith('/onboarding');
+      if (!signedIn && !public) return Routes.welcome;
+      return null;
+    },
+    routes: [
+      _page(Routes.splash, (_) => const SplashScreen(), fade: true),
+      _page(Routes.welcome, (_) => const WelcomeScreen(), fade: true),
+      _page(Routes.intro, (_) => const IntroScreen()),
+      _page(Routes.quiz, (_) => const StyleQuizScreen()),
+      _page(Routes.colour, (_) => const ColourTheoryScreen()),
+      _page(Routes.follow, (_) => const FollowPeopleScreen()),
+      _page(Routes.done, (_) => const YoureInScreen()),
+
+      // Full-screen (no bottom navigation).
+      _page(
+        '/ootd/:id',
+        (s) => OotdViewerScreen(ootdId: s.pathParameters['id']!),
+      ),
+      _page('/stylist', (_) => const TaylorScreen()),
+      _page('/stylist/result', (_) => const TaylorResultScreen()),
+      _page('/wardrobe/capture', (_) => const AddToWardrobeScreen()),
+
+      // Screens hosted inside the bottom-navigation shell.
+      ShellRoute(
+        builder: (context, state, child) =>
+            MainShell(path: state.uri.path, child: child),
+        routes: [
+          _page('/home', (_) => const HomeScreen(), fade: true),
+          _page('/create', (_) => const CreateOotdScreen()),
+          _page('/discover', (_) => const DiscoverScreen(), fade: true),
+          _page('/search', (_) => const SearchScreen()),
+          _page(
+            '/search/results',
+            (s) => SearchResultsScreen(query: s.uri.queryParameters['q'] ?? ''),
+          ),
+          _page(
+            '/outfit/:id',
+            (s) => OutfitDetailScreen(outfitId: s.pathParameters['id']!),
+          ),
+          _page('/studio', (_) => const StudioHomeScreen()),
+          _page('/studio/builder', (_) => const OutfitBuilderScreen()),
+          _page('/wardrobe', (_) => const WardrobeScreen(), fade: true),
+          _page(
+            '/wardrobe/item/:id',
+            (s) => ItemDetailScreen(itemId: s.pathParameters['id']!),
+          ),
+          _page('/saved', (_) => const SavedOutfitsScreen()),
+          _page('/me', (_) => const MyProfileScreen(), fade: true),
+          _page('/me/colour-theory', (_) => const ColourTheoryProfileScreen()),
+          _page(
+            '/u/:handle',
+            (s) => PublicProfileScreen(handle: s.pathParameters['handle']!),
+          ),
+          _page('/followers', (_) => const FollowersScreen()),
+          _page('/following', (_) => const FollowingScreen()),
+          _page('/activity', (_) => const ActivityScreen()),
+          _page('/settings', (_) => const SettingsScreen()),
+          _page('/photoshoot', (_) => const PhotoshootScreen()),
+          _page('/photoshoot/result', (_) => const PhotoshootResultScreen()),
+        ],
+      ),
+    ],
+  );
+});
