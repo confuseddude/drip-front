@@ -163,10 +163,7 @@ class ColourTheoryProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   child: AppButton(
                     label: 'USE MY PALETTE IN STUDIO ✦',
-                    color: AppColors.cyan,
-                    height: 41,
-                    radius: 16,
-                    textStyle: AppText.display(11),
+                    height: 44,
                     onPressed: () {
                       showDripToast(context, 'Palette loaded into the Studio');
                       context.push('/studio');

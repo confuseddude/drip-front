@@ -138,7 +138,6 @@ Future<bool> showDripConfirm(
                     label: cancelLabel,
                     style: AppButtonStyle.outline,
                     height: 44,
-                    radius: 14,
                     onPressed: () => Navigator.of(ctx).pop(false),
                   ),
                 ),
@@ -150,7 +149,6 @@ Future<bool> showDripConfirm(
                         ? AppButtonStyle.danger
                         : AppButtonStyle.primary,
                     height: 44,
-                    radius: 14,
                     onPressed: () => Navigator.of(ctx).pop(true),
                   ),
                 ),

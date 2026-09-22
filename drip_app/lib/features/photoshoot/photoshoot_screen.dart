@@ -48,7 +48,6 @@ class _PhotoshootScreenState extends ConsumerState<PhotoshootScreen> {
           AppButton(
             label: 'USE SCENE',
             height: 44,
-            radius: 14,
             onPressed: () => Navigator.of(ctx).pop(t.text),
           ),
         ],
@@ -270,10 +269,8 @@ class _PhotoshootScreenState extends ConsumerState<PhotoshootScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: AppButton(
               label: 'GENERATE SCENE LOOK ✦',
-              height: 45,
-              radius: 16,
+              height: 44,
               loading: s.render.isLoading,
-              textStyle: AppText.display(14),
               onPressed: _generate,
             ),
           ),

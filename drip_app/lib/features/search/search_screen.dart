@@ -69,7 +69,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             title: 'FIND DRIP',
             card: true,
             height: 50,
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '✦',
               mono: true,

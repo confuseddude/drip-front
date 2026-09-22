@@ -91,9 +91,6 @@ class TaylorResultScreen extends ConsumerWidget {
                           label: 'CUSTOMIZE',
                           style: AppButtonStyle.subtle,
                           height: 36,
-                          radius: 16,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          textStyle: AppText.display(10),
                           onPressed: () => context.push('/studio/builder'),
                         ),
                       ),
@@ -102,9 +99,6 @@ class TaylorResultScreen extends ConsumerWidget {
                         child: AppButton(
                           label: 'BUY ENTIRE FIT →',
                           height: 36,
-                          radius: 16,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          textStyle: AppText.display(10),
                           onPressed: () {
                             ref
                                 .read(bagProvider.notifier)

@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/drip_image.dart';
 import '../../core/widgets/overlays.dart';
+import '../../core/widgets/pills.dart';
 import '../../core/widgets/tap.dart';
 import '../../data/mock/mock_content.dart';
 import '../../routing/main_shell.dart';
@@ -103,7 +104,6 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
           AppButton(
             label: 'ADD TAG',
             height: 44,
-            radius: 14,
             onPressed: () => Navigator.of(ctx).pop(controller.text),
           ),
         ],
@@ -214,27 +214,11 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 40,
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.elevated),
-                    ),
-                    child: Row(
-                      children: [
-                        _SourceTab(
-                          label: 'CAMERA CAPTURE',
-                          active: _camera,
-                          onTap: () => _pick(ImageSource.camera),
-                        ),
-                        _SourceTab(
-                          label: 'VAULT GALLERY',
-                          active: !_camera,
-                          onTap: () => _pick(ImageSource.gallery),
-                        ),
-                      ],
+                  DripSegmented(
+                    labels: const ['CAMERA CAPTURE', 'VAULT GALLERY'],
+                    selected: _camera ? 0 : 1,
+                    onTap: (i) => _pick(
+                      i == 0 ? ImageSource.camera : ImageSource.gallery,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -465,10 +449,9 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
             padding: const EdgeInsets.all(16),
             child: AppButton(
               label: 'POST OOTD ✦',
-              height: 45,
+              height: 44,
               loading: s.posting,
               onPressed: _post,
-              textStyle: AppText.display(14),
             ),
           ),
         ],
@@ -484,40 +467,4 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(text, style: AppText.mono(9, color: AppColors.muted));
-}
-
-class _SourceTab extends StatelessWidget {
-  const _SourceTab({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Tap(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: active ? context.palette.accent : AppColors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            label,
-            style: AppText.manrope(
-              12,
-              weight: active ? FontWeight.w700 : FontWeight.w600,
-              color: active ? AppColors.base : AppColors.muted,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

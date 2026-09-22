@@ -7,6 +7,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/drip_image.dart';
 import '../../core/widgets/states.dart';
+import '../../core/widgets/pills.dart';
 import '../../core/widgets/tap.dart';
 import '../../core/widgets/top_bar.dart';
 import '../../data/models/notification.dart';
@@ -46,7 +47,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     final activity = ref.watch(activityProvider);
-    final accent = context.palette.accent;
 
     return ShellPage(
       child: Column(
@@ -62,42 +62,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  for (final f in NotificationFilter.values)
-                    Expanded(
-                      child: Tap(
-                        onTap: () => setState(() => _filter = f),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          height: 30,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: _filter == f
-                                ? accent
-                                : AppColors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            _labels[f]!,
-                            style: AppText.mono(
-                              9,
-                              color: _filter == f
-                                  ? AppColors.base
-                                  : AppColors.muted,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            child: DripSegmented(
+              labels: [for (final f in NotificationFilter.values) _labels[f]!],
+              selected: _filter.index,
+              onTap: (i) =>
+                  setState(() => _filter = NotificationFilter.values[i]),
             ),
           ),
           Expanded(

@@ -39,7 +39,7 @@ class OutfitDetailScreen extends ConsumerWidget {
             card: true,
             height: 42,
             titleSize: 14,
-            leading: const BackGlyph(mono: true, size: 18),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '↗',
               mono: true,
@@ -245,9 +245,7 @@ class _Content extends ConsumerWidget {
               Expanded(
                 child: AppButton(
                   label: 'SHOP ENTIRE FIT →',
-                  height: 41,
-                  radius: 18,
-                  textStyle: AppText.mono(12, weight: FontWeight.w500),
+                  height: 44,
                   onPressed: () => _addToBag(context, ref, outfit.pieces),
                 ),
               ),

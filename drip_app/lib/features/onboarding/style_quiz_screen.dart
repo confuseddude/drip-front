@@ -79,7 +79,7 @@ class _MoodTile extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppColors.cyan : AppColors.elevated,
+            color: selected ? AppColors.cream : AppColors.elevated,
             width: 2,
           ),
         ),
@@ -107,7 +107,7 @@ class _MoodTile extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.cyan,
+                                color: AppColors.cream,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

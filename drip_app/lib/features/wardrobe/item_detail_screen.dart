@@ -96,8 +96,7 @@ class ItemDetailScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             AppButton(
               label: 'SAVE CHANGES',
-              height: 46,
-              radius: 14,
+              height: 44,
               onPressed: () => Navigator.of(ctx).pop(true),
             ),
           ],
@@ -137,7 +136,7 @@ class ItemDetailScreen extends ConsumerWidget {
         children: [
           DripTopBar(
             title: 'WARDROBE ITEM',
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '⚡',
               mono: true,
@@ -365,9 +364,7 @@ class _Body extends ConsumerWidget {
               children: [
                 AppButton(
                   label: 'CREATE FIT WITH THIS ✦',
-                  height: 42,
-                  radius: 16,
-                  textStyle: AppText.display(12),
+                  height: 44,
                   onPressed: () {
                     final studio = ref.read(studioProvider.notifier)
                       ..useSource(wardrobe: true);

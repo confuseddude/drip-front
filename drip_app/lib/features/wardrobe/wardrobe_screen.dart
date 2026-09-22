@@ -60,7 +60,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
             title: 'WARDROBE',
             card: true,
             height: 44,
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '➕',
               mono: true,
@@ -83,23 +83,18 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   FilterPill(
                     label: 'MY WARDROBE${count == null ? '' : ' ($count)'}',
                     selected: !_rotationTab,
-                    selectedColor: AppColors.cream,
-                    textStyle: AppText.mono(10),
                     onTap: () => setState(() => _rotationTab = false),
                   ),
                   const SizedBox(width: 8),
                   FilterPill(
                     label: 'SAVED',
                     selected: false,
-                    textStyle: AppText.mono(10),
                     onTap: () => context.push('/saved'),
                   ),
                   const SizedBox(width: 8),
                   FilterPill(
                     label: 'ROTATION',
                     selected: _rotationTab,
-                    selectedColor: AppColors.cream,
-                    textStyle: AppText.mono(10),
                     onTap: () => setState(() => _rotationTab = true),
                   ),
                 ],

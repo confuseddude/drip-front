@@ -84,10 +84,11 @@ class DiscoverScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(
-            height: 37,
+            height: 48,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               itemCount: MockContent.discoverCategories.length,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, i) {
@@ -101,7 +102,7 @@ class DiscoverScreen extends ConsumerWidget {
               },
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Expanded(
             child: catalog.whenDrip(
               onRetry: () => ref.invalidate(outfitCatalogProvider),

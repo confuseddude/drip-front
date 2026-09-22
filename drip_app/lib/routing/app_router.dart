@@ -50,7 +50,8 @@ abstract final class Routes {
   static const home = '/home';
 }
 
-/// Page with the app's standard transition: a short fade + rise.
+/// Page with the app's standard transition: a short fade + rise, on the
+/// shared motion tokens (a fade only under reduced motion).
 CustomTransitionPage<void> dripPage(
   GoRouterState state,
   Widget child, {
@@ -59,13 +60,17 @@ CustomTransitionPage<void> dripPage(
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 260),
-    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionDuration: Motion.nav,
+    reverseTransitionDuration: Motion.quick + const Duration(milliseconds: 40),
     transitionsBuilder: (context, animation, secondary, child) {
       final curved = CurvedAnimation(
         parent: animation,
-        curve: Curves.easeOutCubic,
+        curve: Motion.out,
+        reverseCurve: Curves.easeInCubic,
       );
+      if (Motion.reduced(context)) {
+        return FadeTransition(opacity: curved, child: child);
+      }
       if (fade) return FadeTransition(opacity: curved, child: child);
       return FadeTransition(
         opacity: curved,

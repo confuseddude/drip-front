@@ -119,8 +119,10 @@ class _FashionScrollScreenState extends ConsumerState<FashionScrollScreen> {
                   setState(() => _page = i);
                   _precache(posts, i);
                 },
-                itemBuilder: (context, i) =>
-                    _ReelPage(post: posts[i % posts.length], active: i == _page),
+                itemBuilder: (context, i) => _ReelPage(
+                  post: posts[i % posts.length],
+                  active: i == _page,
+                ),
               ),
               Positioned(
                 top: 0,

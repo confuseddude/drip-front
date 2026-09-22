@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 import 'tap.dart';
 
 enum AppButtonStyle {
-  /// Accent-filled (primary call to action).
+  /// Accent-filled (primary call to action). One per screen.
   primary,
 
   /// Transparent with a hairline border.
@@ -19,89 +20,105 @@ enum AppButtonStyle {
   danger,
 }
 
-/// The Drip button. Defaults reproduce the onboarding CTA (48px, Manrope Bold
-/// 13, tracking .8); pass [textStyle] / [radius] for the Bungee and DM Mono
-/// variants used deeper in the app.
+/// The Drip button.
+///
+/// The button owns its voice: every label is set in DM Mono caps, tracked
+/// like the spec-sheet labels around it, so a call to action reads the same on
+/// every screen. Headlines keep the poster face; buttons never shout in it.
+/// Size follows [height] (36 small, 44 medium, 52 large) and the corner
+/// follows the active skin's roundness.
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.style = AppButtonStyle.primary,
-    this.height = 48,
-    this.radius = 16,
-    this.textStyle,
+    this.height = 52,
     this.loading = false,
-    this.padding = const EdgeInsets.symmetric(horizontal: 24),
+    this.padding,
     this.expand = true,
-    this.color,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final AppButtonStyle style;
   final double height;
-  final double radius;
-  final TextStyle? textStyle;
   final bool loading;
-  final EdgeInsetsGeometry padding;
-  final bool expand;
 
-  /// Overrides the fill of a [AppButtonStyle.primary] button (defaults to the skin accent).
-  final Color? color;
+  /// Defaults to a horizontal inset that scales with [height].
+  final EdgeInsetsGeometry? padding;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.palette.accent;
+    final p = context.palette;
+    final enabled = onPressed != null && !loading;
+    // A disabled primary goes quiet (dark fill, muted label) instead of
+    // turning into a muddy half-transparent slab of accent.
     final (bg, fg, border) = switch (style) {
-      AppButtonStyle.primary => (color ?? accent, AppColors.base, null),
+      _ when onPressed == null => (
+        AppColors.elevated.withValues(alpha: 0.6),
+        AppColors.muted,
+        null,
+      ),
+      AppButtonStyle.primary => (p.accent, p.onAccent, null),
       AppButtonStyle.outline => (
         AppColors.transparent,
         AppColors.cream,
-        AppColors.elevated,
+        AppColors.cream.withValues(alpha: 0.22),
       ),
       AppButtonStyle.subtle => (AppColors.elevated, AppColors.cream, null),
       AppButtonStyle.danger => (
         AppColors.surface,
         AppColors.red,
-        AppColors.red,
+        AppColors.red.withValues(alpha: 0.6),
       ),
     };
-    final enabled = onPressed != null && !loading;
-    // The button owns the label colour; callers only choose the type ramp.
-    final text =
-        (textStyle ??
-                AppText.manrope(
-                  13,
-                  weight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                  lineHeight: 20,
-                ))
-            .copyWith(color: fg);
+    final small = height < 40;
+    final text = AppText.mono(
+      small ? 10.5 : 12,
+      color: fg,
+      weight: FontWeight.w500,
+      letterSpacing: small ? 1 : 1.5,
+    );
+    final radius = (height * 0.3 * p.roundness).clamp(8.0, height / 2);
 
     return Tap(
       onTap: enabled ? onPressed : null,
       semanticLabel: label,
-      child: AnimatedOpacity(
-        opacity: onPressed == null ? 0.45 : 1,
-        duration: const Duration(milliseconds: 150),
-        child: Container(
-          height: height,
-          width: expand ? double.infinity : null,
-          padding: padding,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(radius),
-            border: border == null ? null : Border.all(color: border),
-          ),
+      child: AnimatedContainer(
+        duration: Motion.quick,
+        curve: Motion.out,
+        height: height,
+        width: expand ? double.infinity : null,
+        padding:
+            padding ??
+            EdgeInsets.symmetric(
+              horizontal: small ? 12 : (height < 48 ? 16 : 24),
+            ),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(radius),
+          border: border == null ? null : Border.all(color: border),
+        ),
+        child: AnimatedSwitcher(
+          duration: Motion.quick,
           child: loading
               ? SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: fg),
+                  key: const ValueKey('loading'),
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 1.6, color: fg),
                 )
-              : Text(label, style: text, textAlign: TextAlign.center),
+              : Text(
+                  label.toUpperCase(),
+                  key: const ValueKey('label'),
+                  style: text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
         ),
       ),
     );

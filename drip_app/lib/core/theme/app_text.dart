@@ -41,14 +41,26 @@ abstract final class AppText {
     );
   }
 
-  /// DM Mono — labels, meta, numbers.
+  /// Smallest size any label is set at. The Figma drew some meta at 8–9px,
+  /// which is unreadable on a phone held at arm's length.
+  static const double minLabel = 10;
+
+  /// DM Mono — labels, meta, numbers. Never smaller than [minLabel].
   static TextStyle mono(
     double size, {
     Color color = AppColors.cream,
     FontWeight weight = FontWeight.w400,
     double? letterSpacing,
     double? lineHeight,
-  }) => _base('DM Mono', size, color, weight, letterSpacing, lineHeight, null);
+  }) => _base(
+    'DM Mono',
+    size < minLabel ? minLabel : size,
+    color,
+    weight,
+    letterSpacing,
+    lineHeight,
+    null,
+  );
 
   /// The active theme's headline typeface (set by the app when the theme
   /// changes; the default is Bungee, the original DRIP voice).

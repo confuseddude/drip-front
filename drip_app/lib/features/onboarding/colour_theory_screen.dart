@@ -77,7 +77,7 @@ class _ColourStrip extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? AppColors.cyan : AppColors.elevated,
+            color: selected ? AppColors.cream : AppColors.elevated,
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -113,14 +113,14 @@ class _ColourStrip extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.cyan.withValues(alpha: 0.08),
+                  color: AppColors.cream.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'WEAR',
                   style: AppText.mono(
                     9,
-                    color: AppColors.cyan,
+                    color: AppColors.cream,
                     weight: FontWeight.w500,
                   ),
                 ),

@@ -20,12 +20,14 @@ import '../../data/models/ootd.dart';
 import '../../data/models/outfit.dart';
 import '../../routing/main_shell.dart';
 import '../activity/activity_controller.dart';
+import '../bag/bag_controller.dart';
+import '../bag/bag_sheet.dart';
 import '../outfits/outfit_controller.dart';
 import '../social/social_controller.dart';
 import 'feed_controller.dart';
 
-/// Home: brand + actions → today's weather/outfit hero → feature blocks →
-/// stories → today's-drip bar → a two-column grid of fresh fits.
+/// Home: brand + inbox → stories → today (weather, pick, Ask Taylor) →
+/// tools → today's drip (into the Scroll) → a staggered wall of fresh fits.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -178,50 +180,54 @@ class _HomeBody extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           const SliverToBoxAdapter(child: _StoriesStrip()),
+          // The pick's portrait rises out of the card's top edge, so the
+          // card sits a little lower than the stories' baseline.
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-              child: _WeatherHeroCard(outfit: todaysPick),
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+              child: _TodayCard(outfit: todaysPick),
             ),
           ),
           const SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
-              child: _FeatureBlocksRow(),
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _FeatureBlocks(),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-              child: _DripBar(count: posts.length),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _DripBar(posts: posts),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
+              padding: const EdgeInsets.fromLTRB(20, 32, 12, 12),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  Text('FRESH FITS', style: AppText.display(15)),
+                  const SizedBox(width: 8),
                   Text(
-                    'FRESH FITS',
-                    style: AppText.mono(
-                      11,
-                      color: AppColors.muted,
-                      letterSpacing: 1.6,
-                    ),
+                    tiles.length.toString().padLeft(2, '0'),
+                    style: AppText.mono(10, color: AppColors.dim),
                   ),
                   const Spacer(),
                   Tap(
                     onTap: () => context.push('/discover'),
                     semanticLabel: 'Search and discover fits',
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
                       child: Text(
                         'SEARCH & DISCOVER  →',
                         style: AppText.mono(
                           10,
-                          color: context.palette.accent,
+                          color: AppColors.muted,
                           weight: FontWeight.w500,
-                          letterSpacing: 0.8,
+                          letterSpacing: 1,
                         ),
                       ),
                     ),
@@ -231,19 +237,8 @@ class _HomeBody extends ConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 0, 16, bottom + 12),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.76,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, i) => _GridTile(item: tiles[i]),
-                childCount: tiles.length,
-              ),
-            ),
+            padding: EdgeInsets.fromLTRB(16, 0, 16, bottom + 16),
+            sliver: SliverToBoxAdapter(child: _StaggeredGrid(tiles: tiles)),
           ),
         ],
       ),
@@ -425,148 +420,230 @@ class _StoryBubble extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────────────── weather hero
+// ────────────────────────────────────────────────────────────── today card
 
-/// The Home hero: today's mocked weather, a palette swatch coordinated with
-/// the active theme skin, and a suggested outfit. Tap opens Ask Taylor —
-/// "what to wear today" leads straight into the stylist.
-class _WeatherHeroCard extends StatelessWidget {
-  const _WeatherHeroCard({required this.outfit});
+const _weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const _months = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+];
+
+/// The Home hero: today's (mocked) weather, what it means for your fit, and
+/// the day's pick, with Taylor one tap away. It's the only stylist entry on
+/// Home: the whole card leads there, "Ask Taylor" just names the door.
+///
+/// The pick's portrait breaks out of the card's top edge, like a photo tucked
+/// under a paper clip: the one deliberate overlap on the screen.
+class _TodayCard extends StatelessWidget {
+  const _TodayCard({required this.outfit});
   final Outfit? outfit;
+
+  static const _portraitW = 92.0;
+  static const _portraitH = 124.0;
+  static const _rise = 18.0;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final weather = MockWeather.today();
-    final corner = (28 * p.roundness).clamp(14.0, 32.0);
+    final now = DateTime.now();
+    final date =
+        '${_weekdays[now.weekday - 1]} ${now.day} ${_months[now.month - 1]}';
+    final corner = (26 * p.roundness).clamp(14.0, 30.0);
     final swatches = [p.accent, p.secondary, p.wash, AppColors.cream];
+    final pick = outfit;
 
-    return Tap(
-      onTap: () => context.push('/stylist'),
-      semanticLabel: "Today's weather and outfit pick, ask Taylor",
-      scale: 0.98,
-      child: Glass(
-        radius: corner,
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    final card = Glass(
+      radius: corner,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(right: pick == null ? 0 : _portraitW + 12),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TODAY, $date',
+                  style: AppText.mono(
+                    10,
+                    color: AppColors.muted,
+                    letterSpacing: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${weather.tempF}°',
+                      style: AppText.display(40, lineHeight: 42),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _SwatchStack(colors: swatches),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${weather.glyph}  ${weather.condition}'
+                                  .toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.mono(
+                                10,
+                                color: AppColors.cream,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  weather.advice,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.manrope(
+                    13,
+                    color: AppColors.cream.withValues(alpha: 0.78),
+                    lineHeight: 19,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 0.75,
+            color: AppColors.cream.withValues(alpha: 0.10),
+          ),
+          SizedBox(
+            height: 56,
+            child: Row(
               children: [
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "TODAY'S WEATHER",
+                        pick == null ? 'YOUR STYLIST' : "TODAY'S PICK",
                         style: AppText.mono(
                           10,
-                          color: AppColors.muted,
+                          color: AppColors.dim,
                           letterSpacing: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(weather.glyph, style: AppText.display(26)),
-                          const SizedBox(width: 10),
-                          Text(
-                            '${weather.tempF}°  ${weather.condition}',
-                            style: AppText.display(16),
-                          ),
-                        ],
+                      const SizedBox(height: 3),
+                      Text(
+                        pick?.title ?? 'Plan a look for today',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.manrope(14, weight: FontWeight.w700),
                       ),
                     ],
                   ),
                 ),
-                Row(
-                  children: [
-                    for (final c in swatches)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            color: c,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.24),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                const SizedBox(width: 12),
+                Text(
+                  'ASK TAYLOR  →',
+                  style: AppText.mono(
+                    11,
+                    color: p.accent,
+                    weight: FontWeight.w500,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-            Text(
-              weather.advice,
-              style: AppText.manrope(
-                13,
-                color: AppColors.cream.withValues(alpha: 0.85),
-                lineHeight: 18,
-              ),
+          ),
+        ],
+      ),
+    );
+
+    return Tap(
+      onTap: () => context.push('/stylist'),
+      semanticLabel:
+          "Today, ${weather.tempF} degrees, ${weather.condition}. "
+          "${pick == null ? '' : "Today's pick: ${pick.title}. "}Ask Taylor",
+      scale: 0.985,
+      child: pick == null
+          ? card
+          : Stack(
+              clipBehavior: Clip.none,
+              children: [
+                card,
+                Positioned(
+                  top: -_rise,
+                  right: 18,
+                  width: _portraitW,
+                  height: _portraitH,
+                  child: _Portrait(image: pick.image, radius: corner * 0.55),
+                ),
+              ],
             ),
-            if (outfit != null) ...[
-              const SizedBox(height: 14),
-              Glass(
-                radius: 16,
-                thickness: GlassThickness.thin,
-                shadow: false,
-                padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: DripImage(
-                          outfit!.image,
-                          alignment: Alignment.topCenter,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "TODAY'S PICK",
-                            style: AppText.mono(
-                              9,
-                              color: AppColors.muted,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            outfit!.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.manrope(13, weight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '✦ ASK TAYLOR',
-                      style: AppText.mono(
-                        9,
-                        color: p.accent,
-                        weight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
+    );
+  }
+}
+
+/// The day's pick as a small print: hairline frame, a soft drop so it reads
+/// as lifted off the card rather than cut into it.
+class _Portrait extends StatelessWidget {
+  const _Portrait({required this.image, required this.radius});
+  final String image;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = BorderRadius.circular(radius);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: r,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 18,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: r,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            DripImage(
+              image,
+              alignment: Alignment.topCenter,
+              logicalWidth: _TodayCard._portraitW,
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: r,
+                border: Border.all(
+                  color: AppColors.cream.withValues(alpha: 0.18),
+                  width: 0.75,
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -574,144 +651,270 @@ class _WeatherHeroCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────── feature blocks
+/// The theme's palette as overlapping paint chips.
+class _SwatchStack extends StatelessWidget {
+  const _SwatchStack({required this.colors});
+  final List<Color> colors;
 
-class _FeatureBlock {
-  const _FeatureBlock(this.icon, this.label);
-  final IconData icon;
-  final String label;
-}
-
-const _featureBlocks = [
-  _FeatureBlock(Icons.face_retouching_natural_rounded, 'Selfie Coordinator'),
-  _FeatureBlock(Icons.palette_outlined, 'Color Theory'),
-  _FeatureBlock(Icons.shopping_bag_outlined, 'Shop List'),
-  _FeatureBlock(Icons.quiz_outlined, 'Style Quiz'),
-];
-
-/// Mock feature entry points, 2×2. These aren't wired to real screens yet —
-/// tapping just says so, honestly, instead of faking a destination.
-class _FeatureBlocksRow extends StatelessWidget {
-  const _FeatureBlocksRow();
+  static const _d = 12.0;
+  static const _step = 8.0;
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _featureBlocks.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 2.6,
+    return SizedBox(
+      width: _d + _step * (colors.length - 1),
+      height: _d,
+      child: Stack(
+        children: [
+          for (var i = 0; i < colors.length; i++)
+            Positioned(
+              left: i * _step,
+              child: Container(
+                width: _d,
+                height: _d,
+                decoration: BoxDecoration(
+                  color: colors[i],
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.base, width: 1.5),
+                ),
+              ),
+            ),
+        ],
       ),
-      itemBuilder: (context, i) {
-        final f = _featureBlocks[i];
-        final p = context.palette;
-        return Tap(
-          onTap: () => showDripToast(context, 'Coming soon'),
-          semanticLabel: f.label,
-          scale: 0.97,
-          child: Glass(
-            radius: 16,
-            thickness: GlassThickness.thin,
-            shadow: false,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Row(
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────── feature blocks
+
+class _Feature {
+  const _Feature(this.index, this.icon, this.label, {this.soon = false});
+  final String index;
+  final IconData icon;
+  final String label;
+
+  /// No screen behind it yet: the tile says so up front instead of pretending.
+  final bool soon;
+}
+
+const _features = [
+  _Feature(
+    '01',
+    Icons.face_retouching_natural_rounded,
+    'Selfie Coordinator',
+    soon: true,
+  ),
+  _Feature('02', Icons.palette_outlined, 'Colour Theory'),
+  _Feature('03', Icons.shopping_bag_outlined, 'Shop List'),
+  _Feature('04', Icons.quiz_outlined, 'Style Quiz', soon: true),
+];
+
+/// Four tools, 2×2, numbered like the index of a lookbook.
+class _FeatureBlocks extends ConsumerWidget {
+  const _FeatureBlocks();
+
+  void _open(BuildContext context, _Feature f) {
+    if (f.soon) {
+      showDripToast(context, '${f.label} is coming soon');
+      return;
+    }
+    switch (f.index) {
+      case '02':
+        context.push('/me/colour-theory');
+      case '03':
+        showBagSheet(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inBag = ref.watch(bagProvider).length;
+    Widget tile(_Feature f) => Expanded(
+      child: _FeatureTile(
+        feature: f,
+        meta: f.soon
+            ? 'SOON'
+            : f.index == '03'
+            ? (inBag == 0 ? 'EMPTY' : '$inBag IN BAG')
+            : 'YOUR PALETTE',
+        onTap: () => _open(context, f),
+      ),
+    );
+    return Column(
+      children: [
+        Row(
+          children: [
+            tile(_features[0]),
+            const SizedBox(width: 10),
+            tile(_features[1]),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            tile(_features[2]),
+            const SizedBox(width: 10),
+            tile(_features[3]),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureTile extends StatelessWidget {
+  const _FeatureTile({
+    required this.feature,
+    required this.meta,
+    required this.onTap,
+  });
+  final _Feature feature;
+  final String meta;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final soon = feature.soon;
+    return Tap(
+      onTap: onTap,
+      semanticLabel: soon ? '${feature.label}, coming soon' : feature.label,
+      scale: 0.97,
+      child: Glass(
+        radius: 18,
+        thickness: GlassThickness.thin,
+        shadow: false,
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Icon(f.icon, size: 18, color: p.accent),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    f.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.mono(
-                      10,
-                      weight: FontWeight.w500,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
+                Text(
+                  feature.index,
+                  style: AppText.mono(10, color: AppColors.dim),
+                ),
+                const Spacer(),
+                Icon(
+                  feature.icon,
+                  size: 18,
+                  color: soon ? AppColors.muted : p.accent,
                 ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 14),
+            Text(
+              feature.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.manrope(
+                13,
+                weight: FontWeight.w700,
+                color: soon
+                    ? AppColors.cream.withValues(alpha: 0.7)
+                    : AppColors.cream,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              meta,
+              style: AppText.mono(10, color: AppColors.dim, letterSpacing: 1),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 // ──────────────────────────────────────────────────────────────── info bar
 
-/// The wide bar under the featured fit: a quiet daily summary plus the
-/// stylist entry point (moved here from the header so the header can stay
-/// brand + two actions).
+/// Today's drip: how many new fits are waiting, shown as a fan of their
+/// photos, and the door into the Fashion Scroll where they play.
 class _DripBar extends StatelessWidget {
-  const _DripBar({required this.count});
-  final int count;
+  const _DripBar({required this.posts});
+  final List<Ootd> posts;
+
+  static const _thumb = 34.0;
+  static const _overlap = 12.0;
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.palette.accent;
-    return Glass(
-      radius: 22,
-      thickness: GlassThickness.thin,
-      shadow: false,
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "TODAY'S DRIP",
-                  style: AppText.mono(
-                    10,
-                    color: AppColors.muted,
-                    letterSpacing: 1.4,
+    final shown = posts.take(3).toList();
+    final count = posts.length;
+    return Tap(
+      onTap: () {
+        TabDirection.value = 1;
+        context.go('/scroll');
+      },
+      semanticLabel: "Today's drip: $count new fits. Watch in the scroll",
+      scale: 0.98,
+      child: Glass(
+        radius: 20,
+        thickness: GlassThickness.thin,
+        shadow: false,
+        padding: const EdgeInsets.fromLTRB(12, 11, 16, 11),
+        child: Row(
+          children: [
+            SizedBox(
+              width: _thumb + (_thumb - _overlap) * (shown.length - 1),
+              height: _thumb,
+              child: Stack(
+                children: [
+                  for (var i = shown.length - 1; i >= 0; i--)
+                    Positioned(
+                      left: i * (_thumb - _overlap),
+                      child: Container(
+                        width: _thumb,
+                        height: _thumb,
+                        padding: const EdgeInsets.all(1.5),
+                        decoration: const BoxDecoration(
+                          color: AppColors.base,
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                          child: DripImage(
+                            shown[i].image,
+                            alignment: Alignment.topCenter,
+                            logicalWidth: _thumb,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "TODAY'S DRIP",
+                    style: AppText.mono(
+                      10,
+                      color: AppColors.muted,
+                      letterSpacing: 1.6,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '$count fits from creators you follow',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.manrope(13, weight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Tap(
-            onTap: () => context.push('/stylist'),
-            semanticLabel: 'Ask Taylor, your stylist',
-            child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: accent.withValues(alpha: 0.32),
-                  width: 0.75,
-                ),
-              ),
-              child: Text(
-                '✦ ASK TAYLOR',
-                style: AppText.mono(
-                  10,
-                  color: accent,
-                  weight: FontWeight.w500,
-                  letterSpacing: 0.6,
-                ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$count new fits from people you follow',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.manrope(13, weight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.play_arrow_rounded,
+              size: 20,
+              color: AppColors.cream,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -741,16 +944,60 @@ class _GridItem {
   final VoidCallback onTap;
 }
 
+/// Two columns whose tiles alternate tall and short, offset from each other,
+/// so the feed reads like a pinned-up wall instead of a spreadsheet. Both
+/// columns carry the same total height (tall + short per pair).
+class _StaggeredGrid extends StatelessWidget {
+  const _StaggeredGrid({required this.tiles});
+  final List<_GridItem> tiles;
+
+  static const _gap = 12.0;
+  static const _tall = 1.42; // height ÷ width
+  static const _short = 1.12;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, box) {
+        final w = (box.maxWidth - _gap) / 2;
+        Widget column(int side) {
+          final items = <Widget>[];
+          for (var i = side, n = 0; i < tiles.length; i += 2, n++) {
+            // Left starts tall, right starts short: the columns interlock.
+            final tall = (n + side).isEven;
+            if (items.isNotEmpty) items.add(const SizedBox(height: _gap));
+            items.add(
+              SizedBox(
+                height: w * (tall ? _tall : _short),
+                child: _GridTile(item: tiles[i]),
+              ),
+            );
+          }
+          return Column(children: items);
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(width: w, child: column(0)),
+            const SizedBox(width: _gap),
+            SizedBox(width: w, child: column(1)),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _GridTile extends StatelessWidget {
   const _GridTile({required this.item});
   final _GridItem item;
 
   @override
   Widget build(BuildContext context) {
+    final radius = (20 * context.palette.roundness).clamp(12.0, 24.0);
     final photo = ClipRRect(
-      borderRadius: BorderRadius.circular(
-        (22 * context.palette.roundness).clamp(12.0, 26.0),
-      ),
+      borderRadius: BorderRadius.circular(radius),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -759,15 +1006,15 @@ class _GridTile extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
-                end: Alignment.center,
-                colors: [Color(0xCC0E1018), Color(0x000E1018)],
+                end: Alignment(0, 0.1),
+                colors: [Color(0xD90E1018), Color(0x000E1018)],
               ),
             ),
           ),
           Positioned(
             left: 12,
             right: 12,
-            bottom: 11,
+            bottom: 12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -782,16 +1029,16 @@ class _GridTile extends StatelessWidget {
                     lineHeight: 17,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   item.likes == null
                       ? '@${item.handle}'
-                      : '@${item.handle} · ♥ ${formatCount(item.likes!)}',
+                      : '@${item.handle}  ·  ♥ ${formatCount(item.likes!)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppText.mono(
-                    9,
-                    color: AppColors.cream.withValues(alpha: 0.78),
+                    10,
+                    color: AppColors.cream.withValues(alpha: 0.72),
                   ),
                 ),
               ],
@@ -806,10 +1053,13 @@ class _GridTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
               decoration: BoxDecoration(
                 color: AppColors.base.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
               ),
-              child: Text('${item.score}', style: AppText.display(10)),
+              child: Text(
+                '${item.score}',
+                style: AppText.mono(10, weight: FontWeight.w500),
+              ),
             ),
           ),
         ],
@@ -822,7 +1072,7 @@ class _GridTile extends StatelessWidget {
       semanticLabel: '${item.title} by ${item.handle}',
       child: item.heroId == null
           ? photo
-          : FitHero(ootdId: item.heroId!, radius: 22, child: photo),
+          : FitHero(ootdId: item.heroId!, radius: radius, child: photo),
     );
   }
 }
@@ -859,6 +1109,7 @@ class _HomeSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width - 32;
+    final half = (width - 10) / 2;
     return ShimmerScope(
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
@@ -870,26 +1121,22 @@ class _HomeSkeleton extends StatelessWidget {
               child: _StoriesSkeleton(),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-              child: Skeleton(width: width, height: width * 1.06, radius: 28),
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+              child: Skeleton(width: width, height: 210, radius: 26),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              child: Skeleton(width: width, height: 64, radius: 22),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 22, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Skeleton(height: (width / 2) / 0.76, radius: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Skeleton(height: (width / 2) / 0.76, radius: 22),
-                  ),
+                  Skeleton(width: half, height: 84, radius: 18),
+                  const SizedBox(width: 10),
+                  Skeleton(width: half, height: 84, radius: 18),
                 ],
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Skeleton(width: width, height: 58, radius: 20),
             ),
           ],
         ),

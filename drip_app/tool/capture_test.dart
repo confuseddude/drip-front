@@ -243,6 +243,66 @@ void main() {
     await _settle(t, ms: 600);
   });
 
+  // Every route once, default skin, for a full visual review:
+  //   flutter test tool/capture_test.dart --plain-name "every screen" ...
+  testWidgets('every screen', (t) async {
+    final c = await _boot(t);
+    final router = c.read(routerProvider);
+    for (final r in [
+      '/home',
+      '/scroll',
+      '/wardrobe',
+      '/me',
+      '/discover',
+      '/search',
+      '/search/results?q=cargo',
+      '/activity',
+      '/settings',
+      '/themes',
+      '/create',
+      '/studio',
+      '/studio/builder',
+      '/outfit/o_cyber_flare',
+      '/ootd/ootd_moto',
+      '/u/sofiamae',
+      '/followers',
+      '/following',
+      '/saved',
+      '/wardrobe/item/w_biker',
+      '/wardrobe/capture',
+      '/me/colour-theory',
+      '/stylist',
+      '/stylist/result',
+      '/photoshoot',
+      '/photoshoot/result',
+    ]) {
+      TabDirection.value = 0;
+      router.go(r);
+      await _settle(t, ms: 1300);
+      await _shot(
+        t,
+        'all${r.replaceAll(RegExp(r'[/?=]'), '_')}',
+      );
+    }
+  });
+
+  testWidgets('every onboarding screen', (t) async {
+    final c = await _boot(t);
+    final router = c.read(routerProvider);
+    for (final r in [
+      '/welcome',
+      '/onboarding/intro',
+      '/onboarding/quiz',
+      '/onboarding/colour',
+      '/onboarding/follow',
+      '/onboarding/done',
+    ]) {
+      router.go(r);
+      await _settle(t, ms: 1300);
+      await _shot(t, 'onb${r.replaceAll('/', '_')}');
+    }
+  });
+
   testWidgets('other screens', (t) async {
     final c = await _boot(t, skin: DripSkin.crimsonTeal);
     final router = c.read(routerProvider);

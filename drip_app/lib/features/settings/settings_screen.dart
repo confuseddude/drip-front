@@ -13,6 +13,7 @@ import '../../core/widgets/controls.dart';
 import '../../core/widgets/drip_image.dart';
 import '../../core/widgets/overlays.dart';
 import '../../core/widgets/tap.dart';
+import '../../core/widgets/top_bar.dart';
 import '../../data/models/settings.dart';
 import '../../routing/main_shell.dart';
 import '../session/reset_app_state.dart';
@@ -70,12 +71,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
               ),
               const SizedBox(height: 14),
-              AppButton(
-                label: 'SAVE',
-                height: 44,
-                radius: 14,
-                onPressed: submit,
-              ),
+              AppButton(label: 'SAVE', height: 44, onPressed: submit),
             ],
           );
         },
@@ -161,7 +157,6 @@ class SettingsScreen extends ConsumerWidget {
             AppButton(
               label: 'UPDATE PASSWORD',
               height: 44,
-              radius: 14,
               onPressed: () {
                 String? e;
                 if (current.text.isEmpty) {
@@ -267,41 +262,11 @@ class SettingsScreen extends ConsumerWidget {
     return ShellPage(
       child: Column(
         children: [
-          SizedBox(
+          DripTopBar(
+            title: 'SETTINGS',
             height: 56,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Tap(
-                    onTap: () =>
-                        context.canPop() ? context.pop() : context.go('/me'),
-                    semanticLabel: 'Back',
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.cream.withValues(alpha: 0.12),
-                        ),
-                      ),
-                      child: Text('◀', style: AppText.mono(14)),
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'SETTINGS',
-                        style: AppText.display(16, letterSpacing: 1),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 30),
-                ],
-              ),
+            leading: BackGlyph(
+              onTap: () => context.canPop() ? context.pop() : context.go('/me'),
             ),
           ),
           Expanded(
@@ -578,9 +543,7 @@ class SettingsScreen extends ConsumerWidget {
                   child: AppButton(
                     label: 'LOG OUT OF DRIP',
                     style: AppButtonStyle.danger,
-                    height: 48,
-                    radius: 20,
-                    textStyle: AppText.display(13, letterSpacing: 1),
+                    height: 52,
                     onPressed: () async {
                       final ok = await showDripConfirm(
                         context,
@@ -611,11 +574,8 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-    child: Text(
-      text,
-      style: AppText.mono(10, color: AppColors.muted, letterSpacing: 2),
-    ),
+    padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
+    child: SectionLabel(text),
   );
 }
 
@@ -626,12 +586,13 @@ class _Group extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 2),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.cream.withValues(alpha: 0.12)),
+        borderRadius: BorderRadius.circular(20 * context.palette.roundness),
+        border: Border.all(color: AppColors.cream.withValues(alpha: 0.08)),
       ),
       child: Column(children: children),
     );
@@ -658,17 +619,15 @@ class _Row extends StatelessWidget {
       onTap: onTap,
       scale: 1,
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: trailing != null ? 14 : 14,
-        ),
-        constraints: BoxConstraints(minHeight: trailing != null ? 52 : 47),
+        margin: const EdgeInsets.only(left: 16),
+        padding: const EdgeInsets.fromLTRB(0, 12, 14, 12),
+        constraints: const BoxConstraints(minHeight: 52),
         decoration: BoxDecoration(
           border: last
               ? null
               : Border(
                   bottom: BorderSide(
-                    color: AppColors.cream.withValues(alpha: 0.12),
+                    color: AppColors.cream.withValues(alpha: 0.07),
                   ),
                 ),
         ),
@@ -693,8 +652,12 @@ class _Row extends StatelessWidget {
             if (trailing != null)
               trailing!
             else if (onTap != null) ...[
-              const SizedBox(width: 8),
-              Text('❯', style: AppText.mono(12, color: AppColors.muted)),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.dim,
+              ),
             ],
           ],
         ),

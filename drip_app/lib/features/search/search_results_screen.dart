@@ -40,7 +40,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             child: DripTopBar(
               title: 'SEARCH RESULTS',
               height: 50,
-              leading: const BackGlyph(mono: true),
+              leading: const BackGlyph(),
               trailing: GlyphButton(
                 '⌕',
                 mono: true,
@@ -125,22 +125,16 @@ class _Body extends StatelessWidget {
               FilterPill(
                 label: 'FITS (${r.fits.length})',
                 selected: tab == 0,
-                selectedColor: AppColors.cyan,
-                textStyle: AppText.mono(10),
                 onTap: () => onTab(0),
               ),
               FilterPill(
                 label: 'CREATORS (${r.creatorHandles.length})',
                 selected: tab == 1,
-                selectedColor: AppColors.cyan,
-                textStyle: AppText.mono(10),
                 onTap: () => onTab(1),
               ),
               FilterPill(
                 label: 'COLLECTIONS',
                 selected: tab == 2,
-                selectedColor: AppColors.cyan,
-                textStyle: AppText.mono(10),
                 onTap: () => onTab(2),
               ),
             ],

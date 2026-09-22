@@ -41,11 +41,6 @@ class SavedOutfitsScreen extends ConsumerWidget {
                   child: FilterPill(
                     label: 'MY CLOSET${closet == null ? '' : ' ($closet)'}',
                     selected: false,
-                    textStyle: AppText.mono(10, color: AppColors.muted),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
                     onTap: () => context.go('/wardrobe'),
                   ),
                 ),
@@ -55,8 +50,6 @@ class SavedOutfitsScreen extends ConsumerWidget {
                     label:
                         'SAVED STYLES${saved.value == null ? '' : ' (${saved.value!.length})'}',
                     selected: true,
-                    selectedColor: AppColors.cream,
-                    textStyle: AppText.mono(10),
                     onTap: () {},
                   ),
                 ),

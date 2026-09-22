@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/app_theme.dart';
@@ -9,6 +10,7 @@ import '../../core/widgets/app_button.dart';
 import '../../core/widgets/drip_image.dart';
 import '../../core/widgets/overlays.dart';
 import '../../core/widgets/tap.dart';
+import '../../core/widgets/top_bar.dart';
 import '../../data/mock/mock_content.dart';
 import '../../data/mock/mock_users.dart';
 import '../../data/models/outfit.dart';
@@ -109,33 +111,23 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
     return ShellPage(
       child: Column(
         children: [
-          SizedBox(
-            height: 47,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Tap(
-                    onTap: () {
-                      if (controller.canUndo) {
-                        controller.undo();
-                      } else if (context.canPop()) {
-                        context.pop();
-                      }
-                    },
-                    child: Text('◀ UNDO', style: AppText.inter(16)),
-                  ),
-                  Text('STUDIO CANVAS', style: AppText.display(13)),
-                  Tap(
-                    onTap: controller.reset,
-                    child: Text(
-                      'RESET ⟳',
-                      style: AppText.inter(13, color: AppColors.cyan),
-                    ),
-                  ),
-                ],
-              ),
+          DripTopBar(
+            title: 'STUDIO CANVAS',
+            leading: const BackGlyph(),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _HeaderIcon(
+                  icon: Icons.undo_rounded,
+                  label: 'Undo',
+                  onTap: controller.canUndo ? controller.undo : null,
+                ),
+                _HeaderIcon(
+                  icon: Icons.restart_alt_rounded,
+                  label: 'Reset',
+                  onTap: controller.reset,
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -300,9 +292,6 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                     label: 'PHOTOSHOOT 📸',
                     style: AppButtonStyle.subtle,
                     height: 36,
-                    radius: 18,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: AppText.display(10),
                     onPressed: () => context.push('/photoshoot'),
                   ),
                 ),
@@ -311,10 +300,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                   child: AppButton(
                     label: 'PUBLISH LOOK ✦',
                     height: 36,
-                    radius: 18,
                     loading: _publishing,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: AppText.display(10),
                     onPressed: _publish,
                   ),
                 ),
@@ -357,6 +343,36 @@ class _PieceTile extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: DripImage(piece.image),
+        ),
+      ),
+    );
+  }
+}
+
+/// A 44px header action that dims (and stops responding) when unavailable.
+class _HeaderIcon extends StatelessWidget {
+  const _HeaderIcon({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tap(
+      onTap: onTap,
+      semanticLabel: label,
+      scale: 0.9,
+      child: SizedBox(
+        width: 40,
+        height: 44,
+        child: AnimatedOpacity(
+          duration: Motion.quick,
+          opacity: onTap == null ? 0.35 : 1,
+          child: Icon(icon, size: 20, color: AppColors.cream),
         ),
       ),
     );

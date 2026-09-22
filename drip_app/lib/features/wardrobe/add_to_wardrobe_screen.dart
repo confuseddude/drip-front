@@ -251,10 +251,8 @@ class _AddToWardrobeScreenState extends ConsumerState<AddToWardrobeScreen> {
               padding: EdgeInsets.fromLTRB(16, 8, 16, bottom + 16),
               child: AppButton(
                 label: 'ADD TO WARDROBE ✦',
-                height: 42,
-                radius: 12,
+                height: 44,
                 loading: _saving,
-                textStyle: AppText.display(12),
                 onPressed: detection != null && path != null
                     ? () => _add(path, detection)
                     : null,
@@ -283,11 +281,11 @@ class _ModeButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        height: 29,
+        height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? context.palette.accent : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
+          color: active ? AppColors.cream : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
           border: active ? null : Border.all(color: AppColors.elevated),
         ),
         child: Text(

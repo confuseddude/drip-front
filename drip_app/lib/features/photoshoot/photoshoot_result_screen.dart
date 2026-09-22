@@ -116,9 +116,7 @@ class PhotoshootResultScreen extends ConsumerWidget {
                       const SizedBox(height: 20),
                       AppButton(
                         label: 'POST TO DRIP FEED 🚀',
-                        height: 45,
-                        radius: 16,
-                        textStyle: AppText.display(12),
+                        height: 44,
                         onPressed: () => _postToFeed(context, ref, render),
                       ),
                       const SizedBox(height: 8),
@@ -129,11 +127,6 @@ class PhotoshootResultScreen extends ConsumerWidget {
                               label: 'SAVE TO LOOKS',
                               style: AppButtonStyle.outline,
                               height: 36,
-                              radius: 16,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              textStyle: AppText.mono(10),
                               onPressed: () {
                                 ref
                                     .read(myPhotosProvider.notifier)
@@ -165,14 +158,6 @@ class PhotoshootResultScreen extends ConsumerWidget {
                               label: 'TRY ANOTHER SCENE',
                               style: AppButtonStyle.subtle,
                               height: 36,
-                              radius: 16,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              textStyle: AppText.mono(
-                                10,
-                                color: AppColors.muted,
-                              ),
                               onPressed: () {
                                 ref
                                     .read(photoshootProvider.notifier)
@@ -187,14 +172,6 @@ class PhotoshootResultScreen extends ConsumerWidget {
                               label: 'SHARE FIT',
                               style: AppButtonStyle.subtle,
                               height: 36,
-                              radius: 16,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              textStyle: AppText.mono(
-                                10,
-                                color: AppColors.muted,
-                              ),
                               onPressed: () async {
                                 await Clipboard.setData(
                                   const ClipboardData(

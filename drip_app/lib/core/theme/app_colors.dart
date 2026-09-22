@@ -56,8 +56,9 @@ abstract final class AppColors {
   /// Muted text (`#9A9088`).
   static const Color muted = Color(0xFF9A9088);
 
-  /// Dimmest text (`#6A6058`).
-  static const Color dim = Color(0xFF6A6058);
+  /// Dimmest text (`#857B72`): tertiary metadata. Lifted from the Figma
+  /// `#6A6058` (3.1:1) so it still reads at 4.6:1 on the ground.
+  static const Color dim = Color(0xFF857B72);
 
   /// Hairline used on some dark cards (`#11151D`).
   static const Color deep = Color(0xFF11151D);

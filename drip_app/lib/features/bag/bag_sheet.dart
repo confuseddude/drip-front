@@ -87,8 +87,7 @@ class _BagSheet extends ConsumerWidget {
           const SizedBox(height: 16),
           AppButton(
             label: 'CHECKOUT →',
-            height: 46,
-            radius: 14,
+            height: 44,
             onPressed: () {
               Navigator.of(context).pop();
               showDripToast(context, 'Checkout unlocks with the store backend');
@@ -98,8 +97,7 @@ class _BagSheet extends ConsumerWidget {
           AppButton(
             label: 'CLEAR BAG',
             style: AppButtonStyle.outline,
-            height: 42,
-            radius: 14,
+            height: 44,
             onPressed: () => ref.read(bagProvider.notifier).clear(),
           ),
         ],

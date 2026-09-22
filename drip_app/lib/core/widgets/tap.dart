@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
+
 /// Press-feedback wrapper used instead of ink splashes (the Drip design has
 /// none): content scales down slightly while pressed.
 class Tap extends StatefulWidget {
@@ -43,9 +45,9 @@ class _TapState extends State<Tap> {
         onTapUp: enabled ? (_) => _set(false) : null,
         onTap: widget.onTap,
         child: AnimatedScale(
-          scale: _down ? widget.scale : 1,
-          duration: const Duration(milliseconds: 90),
-          curve: Curves.easeOut,
+          scale: _down && !Motion.reduced(context) ? widget.scale : 1,
+          duration: Motion.press,
+          curve: Motion.out,
           child: widget.child,
         ),
       ),

@@ -266,7 +266,7 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
         children: [
           DripTopBar(
             title: 'FOLLOWING',
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '🎨',
               mono: true,
@@ -296,16 +296,6 @@ class _FollowingScreenState extends ConsumerState<FollowingScreen> {
                     FilterPill(
                       label: label,
                       selected: _filter == i,
-                      selectedColor: AppColors.cyan,
-                      radius: 8,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      textStyle: AppText.mono(
-                        8,
-                        color: _filter == i ? AppColors.base : AppColors.muted,
-                      ),
                       onTap: () => setState(() => _filter = i),
                     ),
                 ],

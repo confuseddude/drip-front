@@ -104,16 +104,29 @@ void main() {
     // Home feed.
     expect(container.read(sessionProvider).signedIn, isTrue);
     expect(find.text('Your story'), findsOneWidget);
-    expect(find.text('DRIP 98'), findsOneWidget);
+    expect(find.text('FRESH FITS'), findsOneWidget);
+    expect(find.text('ASK TAYLOR  →'), findsOneWidget);
+
+    // Like the first fit in the Fashion Scroll, then come back Home.
     final before = container.read(feedProvider).requireValue.first;
+    container.read(routerProvider).go('/scroll');
+    await settle(t, 900);
     await t.tap(
-      find.byWidgetPredicate((w) => w is Tap && w.semanticLabel == 'Unlike'),
+      find
+          .byWidgetPredicate(
+            (w) =>
+                w is Tap &&
+                w.semanticLabel == (before.isLiked ? 'Unlike' : 'Like'),
+          )
+          .first,
     );
     await settle(t);
     expect(
       container.read(feedProvider).requireValue.first.isLiked,
       !before.isLiked,
     );
+    container.read(routerProvider).go('/home');
+    await settle(t, 900);
 
     // Discover filters by category.
     await tapText(t, 'SEARCH & DISCOVER  →');

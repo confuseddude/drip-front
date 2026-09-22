@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/controls.dart';
 import '../../core/widgets/drip_image.dart';
@@ -117,7 +117,6 @@ class TaylorScreen extends ConsumerWidget {
                           _Chip(
                             label: o,
                             selected: s.occasion == o,
-                            color: context.palette.accent,
                             onTap: () => controller.setOccasion(o),
                           ),
                       ],
@@ -136,7 +135,6 @@ class TaylorScreen extends ConsumerWidget {
                           _Chip(
                             label: v,
                             selected: s.vibe == v,
-                            color: AppColors.cyan,
                             onTap: () => controller.setVibe(v),
                           ),
                       ],
@@ -173,10 +171,8 @@ class TaylorScreen extends ConsumerWidget {
               padding: EdgeInsets.fromLTRB(16, 8, 16, bottom + 16),
               child: AppButton(
                 label: 'GENERATE BLUEPRINT LOOK ✦',
-                height: 42,
-                radius: 12,
+                height: 44,
                 loading: loading,
-                textStyle: AppText.display(12),
                 onPressed: generate,
               ),
             ),
@@ -191,25 +187,32 @@ class _Chip extends StatelessWidget {
   const _Chip({
     required this.label,
     required this.selected,
-    required this.color,
     required this.onTap,
   });
   final String label;
   final bool selected;
-  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Tap(
-      onTap: onTap,
+      onTap: () {
+        if (!selected) Haptics.tick();
+        onTap();
+      },
       semanticLabel: label,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        duration: Motion.quick,
+        curve: Motion.out,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? color : AppColors.elevated,
-          borderRadius: BorderRadius.circular(8),
+          color: selected ? AppColors.cream : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? AppColors.cream
+                : AppColors.cream.withValues(alpha: 0.10),
+          ),
         ),
         child: Text(
           label,

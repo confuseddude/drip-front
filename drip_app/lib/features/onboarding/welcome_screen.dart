@@ -75,14 +75,12 @@ class WelcomeScreen extends ConsumerWidget {
                     children: [
                       AppButton(
                         label: 'GET STARTED →',
-                        radius: 12,
                         onPressed: () => context.push('/onboarding/intro'),
                       ),
                       const SizedBox(height: 16),
                       AppButton(
                         label: 'I ALREADY HAVE AN ACCOUNT',
                         style: AppButtonStyle.outline,
-                        radius: 12,
                         onPressed: () async {
                           await ref
                               .read(sessionProvider.notifier)

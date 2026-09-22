@@ -47,20 +47,17 @@ class GlyphButton extends StatelessWidget {
   }
 }
 
-/// Back arrow used by most headers.
+/// Back control used by every header: a slim chevron, drawn (not a glyph),
+/// so it sits on the same optical baseline as the title in every skin.
 class BackGlyph extends StatelessWidget {
-  const BackGlyph({super.key, this.mono = false, this.size = 20, this.onTap});
-  final bool mono;
-  final double size;
+  const BackGlyph({super.key, this.onTap});
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GlyphButton(
-      '◀',
-      mono: mono,
-      size: size,
-      label: 'Back',
+    return Tap(
+      semanticLabel: 'Back',
+      scale: 0.9,
       onTap:
           onTap ??
           () {
@@ -70,6 +67,15 @@ class BackGlyph extends StatelessWidget {
               context.go('/home');
             }
           },
+      child: const SizedBox(
+        width: 44,
+        height: 44,
+        child: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 18,
+          color: AppColors.cream,
+        ),
+      ),
     );
   }
 }
@@ -141,7 +147,7 @@ class SectionLabel extends StatelessWidget {
     this.text, {
     super.key,
     this.size = 10,
-    this.letterSpacing = 1,
+    this.letterSpacing = 1.6,
     this.color = AppColors.muted,
   });
 

@@ -236,15 +236,7 @@ class _TaylorPromo extends StatelessWidget {
             style: AppText.manrope(13),
           ),
           const SizedBox(height: 12),
-          AppButton(
-            label: 'CONSULT STYLIST ✦',
-            height: 28,
-            radius: 12,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            textStyle: AppText.display(10),
-            color: AppColors.cyan,
-            onPressed: onTap,
-          ),
+          AppButton(label: 'CONSULT STYLIST ✦', height: 36, onPressed: onTap),
         ],
       ),
     );

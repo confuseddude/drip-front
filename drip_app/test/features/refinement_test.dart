@@ -237,6 +237,8 @@ void main() {
     ) async {
       await openHome(t);
       expect(find.byType(FitHero), findsWidgets);
+      await t.ensureVisible(find.text('Chrome Heavyweights Fit'));
+      await settle(t, 300);
       await t.tap(find.text('Chrome Heavyweights Fit'));
       await settle(t, 900);
       expect(find.byType(FashionScrollScreen), findsOneWidget);
@@ -245,7 +247,8 @@ void main() {
       container.read(routerProvider).pop();
       await settle(t, 700);
       expect(find.byType(FashionScrollScreen), findsNothing);
-      expect(find.text('Your story'), findsOneWidget);
+      // Home keeps its scroll position, so check the route, not the stories.
+      expect(loc(container), '/home');
     });
 
     testWidgets('opening on a specific fit starts there', (t) async {
@@ -326,15 +329,15 @@ void main() {
       expect(container.read(ootdProvider('ootd_moto'))!.shares, before + 1);
     });
 
-    testWidgets('the end of the feed offers a way back to the top', (t) async {
+    testWidgets('the reel loops from the last fit back to the first', (
+      t,
+    ) async {
       await boot(t);
       await settle(t, 1600);
       container.read(routerProvider).go('/scroll?id=ootd_paris');
       await settle(t, 900);
+      expect(find.text('5 / 5'), findsOneWidget);
       await t.fling(find.byType(PageView), const Offset(0, -400), 1800);
-      await settle(t, 900);
-      expect(find.text("YOU'RE ALL CAUGHT UP"), findsOneWidget);
-      await t.tap(tapLabelled('Back to top'));
       await settle(t, 900);
       expect(find.text('1 / 5'), findsOneWidget);
     });

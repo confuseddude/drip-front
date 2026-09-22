@@ -124,54 +124,87 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    // Two hairline rings around the glyph: the same ripple the loading drop
+    // makes, frozen. Empty, loading and error read as one family.
+    final mark = SizedBox(
+      width: 72,
+      height: 72,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.cream.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.cream.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Text(glyph, style: AppText.inter(18, color: p.accent)),
+          ),
+        ],
+      ),
+    );
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.elevated),
-              ),
-              child: Text(
-                glyph,
-                style: AppText.inter(22, color: context.palette.secondary),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: Motion.dur(context, Motion.content),
+            curve: Motion.out,
+            builder: (context, t, child) => Opacity(
+              opacity: t,
+              child: Transform.translate(
+                offset: Offset(0, 8 * (1 - t)),
+                child: child,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppText.display(14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                mark,
+                const SizedBox(height: 18),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: AppText.display(15, letterSpacing: 0.4),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: AppText.manrope(
+                    13,
+                    color: AppColors.muted,
+                    lineHeight: 19,
+                  ),
+                ),
+                if (actionLabel != null) ...[
+                  const SizedBox(height: 24),
+                  AppButton(
+                    label: actionLabel!,
+                    onPressed: onAction,
+                    expand: false,
+                    height: 44,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppText.manrope(
-                12,
-                color: AppColors.muted,
-                lineHeight: 18,
-              ),
-            ),
-            if (actionLabel != null) ...[
-              const SizedBox(height: 20),
-              AppButton(
-                label: actionLabel!,
-                onPressed: onAction,
-                expand: false,
-                height: 40,
-                radius: 12,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -194,7 +227,7 @@ class ErrorState extends StatelessWidget {
       glyph: '⚠',
       title: 'SIGNAL LOST',
       message: message,
-      actionLabel: 'RETRY ⟳',
+      actionLabel: 'Try again',
       onAction: onRetry,
     );
   }

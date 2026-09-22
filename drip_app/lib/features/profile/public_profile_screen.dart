@@ -36,7 +36,7 @@ class PublicProfileScreen extends ConsumerWidget {
               children: [
                 const DripTopBar(
                   title: 'PUBLIC PORTFOLIO',
-                  leading: BackGlyph(mono: true),
+                  leading: BackGlyph(),
                 ),
                 Expanded(
                   child: EmptyState(
@@ -95,7 +95,6 @@ class _PublicViewState extends ConsumerState<_PublicView> {
           AppButton(
             label: 'SEND',
             height: 44,
-            radius: 14,
             onPressed: () => Navigator.of(ctx).pop(c.text.trim().isNotEmpty),
           ),
         ],
@@ -127,7 +126,7 @@ class _PublicViewState extends ConsumerState<_PublicView> {
             title: 'PUBLIC PORTFOLIO',
             card: true,
             height: 44,
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '💬',
               mono: true,
@@ -281,7 +280,7 @@ class _PrivateView extends ConsumerWidget {
             card: true,
             height: 44,
             cardColor: AppColors.deep,
-            leading: const BackGlyph(mono: true),
+            leading: const BackGlyph(),
             trailing: GlyphButton(
               '🔒',
               mono: true,
@@ -357,12 +356,10 @@ class _PrivateView extends ConsumerWidget {
                       const SizedBox(height: 20),
                       AppButton(
                         label: requested ? 'REQUESTED ✓' : 'REQUEST ACCESS ✦',
-                        height: 40,
-                        radius: 16,
+                        height: 44,
                         style: requested
                             ? AppButtonStyle.outline
                             : AppButtonStyle.primary,
-                        textStyle: AppText.display(12),
                         onPressed: () {
                           ref
                               .read(accessRequestsProvider.notifier)

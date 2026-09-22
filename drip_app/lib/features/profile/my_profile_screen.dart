@@ -52,8 +52,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
             const SizedBox(height: 16),
             AppButton(
               label: 'SAVE PROFILE',
-              height: 46,
-              radius: 14,
+              height: 44,
               onPressed: () {
                 if (name.text.trim().length < 2) {
                   setSheet(() => error = 'Name must be at least 2 characters');
