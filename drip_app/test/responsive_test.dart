@@ -12,6 +12,9 @@ import 'test_fonts.dart';
 /// large phones and tablets.
 const _routes = [
   '/home',
+  '/scroll',
+  '/scroll?id=ootd_moto',
+  '/themes',
   '/ootd/ootd_moto',
   '/create',
   '/discover',

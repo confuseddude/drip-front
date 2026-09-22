@@ -37,7 +37,7 @@ class ProfileIntro extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: ringColor, width: 2),
-            boxShadow: ringColor == AppColors.cyan
+            boxShadow: ringColor == context.palette.secondary
                 ? null
                 : [
                     BoxShadow(
@@ -64,7 +64,7 @@ class ProfileIntro extends StatelessWidget {
                       user.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppText.bungee(nameSize),
+                      style: AppText.display(nameSize),
                     ),
                   ),
                   ?trailing,
@@ -73,7 +73,10 @@ class ProfileIntro extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Text(user.at, style: AppText.mono(11, color: AppColors.cyan)),
+                  Text(
+                    user.at,
+                    style: AppText.mono(11, color: context.palette.secondary),
+                  ),
                   if (onEdit != null) ...[
                     const SizedBox(width: 8),
                     Tap(
@@ -133,7 +136,7 @@ class ProfileStats extends StatelessWidget {
         onTap: onTap,
         child: Column(
           children: [
-            Text(value, style: AppText.bungee(14)),
+            Text(value, style: AppText.display(14)),
             const SizedBox(height: 0),
             Text(label, style: AppText.mono(8, color: labelColor)),
           ],
@@ -171,6 +174,7 @@ class DnaChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.palette.accent;
+    final secondary = context.palette.secondary;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
@@ -181,17 +185,17 @@ class DnaChips extends StatelessWidget {
             decoration: BoxDecoration(
               color: switch (i) {
                 0 => accent,
-                1 => AppColors.cyan,
+                1 => secondary,
                 _ => AppColors.surface,
               },
               borderRadius: BorderRadius.circular(radius),
-              border: i >= 2 ? Border.all(color: AppColors.cyan) : null,
+              border: i >= 2 ? Border.all(color: secondary) : null,
             ),
             child: Text(
               tags[i],
               style: AppText.mono(
                 9,
-                color: i >= 2 ? AppColors.cyan : AppColors.base,
+                color: i >= 2 ? secondary : AppColors.base,
               ),
             ),
           ),
@@ -219,7 +223,7 @@ class ProfileTabs extends StatelessWidget {
     final accent = context.palette.accent;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.elevated)),
       ),
       child: Row(
@@ -240,7 +244,7 @@ class ProfileTabs extends StatelessWidget {
                 ),
                 child: Text(
                   labels[i],
-                  style: AppText.bungee(
+                  style: AppText.display(
                     size,
                     color: i == index ? AppColors.cream : AppColors.muted,
                   ),

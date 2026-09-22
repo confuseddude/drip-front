@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 import 'app_colors.dart';
+import 'drip_skin.dart';
 
 /// Typography helpers matching the Figma type ramp.
 ///
@@ -49,21 +50,46 @@ abstract final class AppText {
     double? lineHeight,
   }) => _base('DM Mono', size, color, weight, letterSpacing, lineHeight, null);
 
-  /// Bungee — headlines.
-  static TextStyle bungee(
+  /// The active theme's headline typeface (set by the app when the theme
+  /// changes; the default is Bungee, the original DRIP voice).
+  static DisplayFace face = DisplayFace.bungee;
+
+  /// Headlines. Each theme speaks in its own face: Bungee (poster caps),
+  /// Fredoka (soft and rounded) or Manrope ExtraBold (clean editorial).
+  static TextStyle display(
     double size, {
     Color color = AppColors.cream,
     double? letterSpacing,
     double? lineHeight,
-  }) => _base(
-    'Bungee',
-    size,
-    color,
-    FontWeight.w400,
-    letterSpacing,
-    lineHeight,
-    null,
-  );
+  }) => switch (face) {
+    DisplayFace.bungee => _base(
+      'Bungee',
+      size,
+      color,
+      FontWeight.w400,
+      letterSpacing,
+      lineHeight,
+      null,
+    ),
+    DisplayFace.fredoka => _base(
+      'Fredoka',
+      size * 1.06,
+      color,
+      FontWeight.w700,
+      letterSpacing,
+      lineHeight,
+      [const FontVariation('wght', 700)],
+    ),
+    DisplayFace.manrope => _base(
+      'Manrope',
+      size * 1.02,
+      color,
+      FontWeight.w800,
+      letterSpacing ?? -0.3,
+      lineHeight,
+      [const FontVariation('wght', 800)],
+    ),
+  };
 
   /// Manrope — body copy and buttons.
   static TextStyle manrope(

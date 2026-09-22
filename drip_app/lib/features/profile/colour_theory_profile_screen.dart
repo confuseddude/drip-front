@@ -53,7 +53,7 @@ class ColourTheoryProfileScreen extends ConsumerWidget {
                       Text(
                         'MIDNIGHT RADAR',
                         textAlign: TextAlign.center,
-                        style: AppText.bungee(22),
+                        style: AppText.display(22),
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -70,7 +70,7 @@ class ColourTheoryProfileScreen extends ConsumerWidget {
                 ),
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     border: Border(
                       top: BorderSide(color: AppColors.elevated),
@@ -110,7 +110,7 @@ class ColourTheoryProfileScreen extends ConsumerWidget {
                         letterSpacing: 0,
                       ),
                       const SizedBox(height: 8),
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
                             child: _Neutral(
@@ -166,7 +166,7 @@ class ColourTheoryProfileScreen extends ConsumerWidget {
                     color: AppColors.cyan,
                     height: 41,
                     radius: 16,
-                    textStyle: AppText.bungee(11),
+                    textStyle: AppText.display(11),
                     onPressed: () {
                       showDripToast(context, 'Palette loaded into the Studio');
                       context.push('/studio');

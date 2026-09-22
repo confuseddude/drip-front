@@ -71,7 +71,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
               border: Border(bottom: BorderSide(color: AppColors.elevated)),
@@ -130,7 +130,13 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   sections.putIfAbsent(sectionFor(i), () => []).add(i);
                 }
                 return ListView(
-                  padding: const EdgeInsets.all(16),
+                  // Clear the floating nav (the tab root draws under it).
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    16,
+                    16,
+                    16 + MediaQuery.paddingOf(context).bottom,
+                  ),
                   children: [
                     for (final entry in sections.entries) ...[
                       Row(

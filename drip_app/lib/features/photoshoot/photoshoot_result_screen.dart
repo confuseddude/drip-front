@@ -107,7 +107,7 @@ class PhotoshootResultScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text(render.title, style: AppText.bungee(18)),
+                      Text(render.title, style: AppText.display(18)),
                       const SizedBox(height: 4),
                       Text(
                         'GENERATED STUDIO AI RENDER · EST. 2077',
@@ -118,7 +118,7 @@ class PhotoshootResultScreen extends ConsumerWidget {
                         label: 'POST TO DRIP FEED 🚀',
                         height: 45,
                         radius: 16,
-                        textStyle: AppText.bungee(12),
+                        textStyle: AppText.display(12),
                         onPressed: () => _postToFeed(context, ref, render),
                       ),
                       const SizedBox(height: 8),

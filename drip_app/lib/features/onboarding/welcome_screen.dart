@@ -53,7 +53,7 @@ class WelcomeScreen extends ConsumerWidget {
                       const SizedBox(height: 32),
                       Text(
                         'THE FIT FINDS YOU.',
-                        style: AppText.bungee(40, lineHeight: 48),
+                        style: AppText.display(40, lineHeight: 48),
                       ),
                       const SizedBox(height: 16),
                       Text(

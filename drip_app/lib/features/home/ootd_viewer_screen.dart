@@ -7,6 +7,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/drip_image.dart';
+import '../../core/widgets/glass.dart';
 import '../../core/widgets/overlays.dart';
 import '../../core/widgets/states.dart';
 import '../../core/widgets/tap.dart';
@@ -218,14 +219,11 @@ class _StoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Glass(
+      radius: 20,
+      thickness: GlassThickness.thin,
+      shadow: false,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.base.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 0),
       child: Row(
         children: [
           Tap(
@@ -335,17 +333,15 @@ class _Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.palette.accent;
     final desc = post.caption.isEmpty ? post.tags.join('  ') : post.caption;
-    return Container(
+    return Glass(
+      thickness: GlassThickness.thick,
+      shadow: false,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       padding: EdgeInsets.fromLTRB(
         20,
         20,
         20,
         12 + MediaQuery.paddingOf(context).bottom,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.9),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: const Border(top: BorderSide(color: AppColors.elevated)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -360,7 +356,7 @@ class _Footer extends StatelessWidget {
                       post.title.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppText.bungee(16),
+                      style: AppText.display(16),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -381,7 +377,7 @@ class _Footer extends StatelessWidget {
                 children: [
                   Text(
                     '✦ ${post.score}',
-                    style: AppText.bungee(20, color: accent),
+                    style: AppText.display(20, color: accent),
                   ),
                   const SizedBox(height: 2),
                   Text(

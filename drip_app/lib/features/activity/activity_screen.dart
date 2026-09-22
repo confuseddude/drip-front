@@ -230,7 +230,7 @@ class _ActivityRow extends StatelessWidget {
               width: 30,
               height: 30,
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.elevated,
                 shape: BoxShape.circle,
               ),

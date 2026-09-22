@@ -86,7 +86,7 @@ class DripField extends StatelessWidget {
     this.focusNode,
     this.radius = 16,
     this.autofocus = false,
-    this.borderColor = AppColors.elevated,
+    this.borderColor,
     this.hintColor = AppColors.muted,
     this.textStyle,
     this.maxLines = 1,
@@ -106,7 +106,7 @@ class DripField extends StatelessWidget {
   final FocusNode? focusNode;
   final double radius;
   final bool autofocus;
-  final Color borderColor;
+  final Color? borderColor;
   final Color hintColor;
   final TextStyle? textStyle;
   final int? maxLines;
@@ -129,7 +129,9 @@ class DripField extends StatelessWidget {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
-              color: errorText != null ? AppColors.red : borderColor,
+              color: errorText != null
+                  ? AppColors.red
+                  : (borderColor ?? AppColors.elevated),
             ),
           ),
           child: Row(

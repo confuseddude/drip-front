@@ -35,7 +35,7 @@ class CreatorTile extends ConsumerWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18),
                 child: user == null
-                    ? const ColoredBox(
+                    ? ColoredBox(
                         color: AppColors.elevated,
                         child: Center(
                           child: Text(

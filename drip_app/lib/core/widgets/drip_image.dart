@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_text.dart';
 
 /// Resolves an image reference to an [ImageProvider]:
 /// bundled asset (`assets/...`), remote / blob URL, or a local file path
@@ -27,6 +28,7 @@ class DripImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.alignment = Alignment.center,
     this.semanticLabel,
+    this.logicalWidth,
   });
 
   final String source;
@@ -34,33 +36,46 @@ class DripImage extends StatelessWidget {
   final AlignmentGeometry alignment;
   final String? semanticLabel;
 
+  /// Display width, in logical pixels, when the image is shown small (avatars,
+  /// thumbnails). The photo is then decoded at that size instead of full
+  /// resolution: far less memory and decode time, so lists scroll smoother.
+  final double? logicalWidth;
+
   @override
   Widget build(BuildContext context) {
+    ImageProvider provider = dripImageProvider(source);
+    if (logicalWidth != null) {
+      final dpr = MediaQuery.devicePixelRatioOf(context);
+      provider = ResizeImage.resizeIfNeeded(
+        (logicalWidth! * dpr).ceil(),
+        null,
+        provider,
+      );
+    }
     return Image(
-      image: dripImageProvider(source),
+      image: provider,
       fit: fit,
       alignment: alignment,
       semanticLabel: semanticLabel,
       gaplessPlayback: true,
+      // Decoding: a quiet tinted block, then the photo fades over it (no
+      // blank flash, no spinner). Cached / synchronous frames skip the fade.
       frameBuilder: (context, child, frame, sync) {
         if (sync) return child;
-        return AnimatedOpacity(
-          opacity: frame == null ? 0 : 1,
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-          child: child,
+        return Stack(
+          fit: StackFit.passthrough,
+          children: [
+            Positioned.fill(child: ColoredBox(color: AppColors.elevated)),
+            AnimatedOpacity(
+              opacity: frame == null ? 0 : 1,
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOut,
+              child: child,
+            ),
+          ],
         );
       },
-      errorBuilder: (context, error, stack) => const ColoredBox(
-        color: AppColors.elevated,
-        child: Center(
-          child: Icon(
-            Icons.broken_image_outlined,
-            color: AppColors.muted,
-            size: 20,
-          ),
-        ),
-      ),
+      errorBuilder: (context, error, stack) => const _ImageFailed(),
     );
   }
 }
@@ -111,7 +126,47 @@ class DripAvatar extends StatelessWidget {
         borderRadius: BorderRadius.circular(
           ring ? (r - ringWidth).clamp(0, r) : r,
         ),
-        child: DripImage(source),
+        child: DripImage(source, logicalWidth: size),
+      ),
+    );
+  }
+}
+
+/// Shown when an image can't be decoded / fetched: intentional, not broken.
+class _ImageFailed extends StatelessWidget {
+  const _ImageFailed();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: AppColors.elevated,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final roomy = box.maxWidth > 90 && box.maxHeight > 60;
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.image_not_supported_outlined,
+                  color: AppColors.muted,
+                  size: 20,
+                ),
+                if (roomy) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'IMAGE UNAVAILABLE',
+                    style: AppText.mono(
+                      8,
+                      color: AppColors.muted,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }

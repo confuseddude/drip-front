@@ -165,7 +165,7 @@ class _AddToWardrobeScreenState extends ConsumerState<AddToWardrobeScreen> {
                           children: [
                             Text(
                               'IS THIS YOUR ${detection.category.toUpperCase() == 'OUTERWEAR' ? 'JACKET' : 'GARMENT'}?',
-                              style: AppText.bungee(14),
+                              style: AppText.display(14),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -254,7 +254,7 @@ class _AddToWardrobeScreenState extends ConsumerState<AddToWardrobeScreen> {
                 height: 42,
                 radius: 12,
                 loading: _saving,
-                textStyle: AppText.bungee(12),
+                textStyle: AppText.display(12),
                 onPressed: detection != null && path != null
                     ? () => _add(path, detection)
                     : null,

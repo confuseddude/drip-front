@@ -11,6 +11,9 @@ abstract interface class FeedRepository {
   Future<Ootd> publish(Ootd post);
   Future<void> sendReaction(String ootdId, String reaction);
   Future<void> sendMessage(String ootdId, String message);
+  Future<List<OotdComment>> comments(String ootdId);
+  Future<OotdComment> addComment(String ootdId, String text);
+  Future<void> recordShare(String ootdId);
 }
 
 class MockFeedRepository implements FeedRepository {
@@ -76,5 +79,40 @@ class MockFeedRepository implements FeedRepository {
   @override
   Future<void> sendMessage(String ootdId, String message) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
+  }
+
+  final Map<String, List<OotdComment>> _comments = {};
+
+  @override
+  Future<List<OotdComment>> comments(String ootdId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    return List.unmodifiable(
+      _comments.putIfAbsent(ootdId, () => MockContent.commentsFor(ootdId)),
+    );
+  }
+
+  @override
+  Future<OotdComment> addComment(String ootdId, String text) async {
+    final list = _comments.putIfAbsent(
+      ootdId,
+      () => MockContent.commentsFor(ootdId),
+    );
+    final c = OotdComment(
+      id: 'c_${DateTime.now().microsecondsSinceEpoch}',
+      handle: 'taylor_drip',
+      avatar: MockContent.myAvatar,
+      text: text,
+      ago: 'NOW',
+    );
+    list.insert(0, c);
+    final i = _feed.indexWhere((o) => o.id == ootdId);
+    if (i >= 0) _feed[i] = _feed[i].copyWith(comments: _feed[i].comments + 1);
+    return c;
+  }
+
+  @override
+  Future<void> recordShare(String ootdId) async {
+    final i = _feed.indexWhere((o) => o.id == ootdId);
+    if (i >= 0) _feed[i] = _feed[i].copyWith(shares: _feed[i].shares + 1);
   }
 }

@@ -366,6 +366,9 @@ abstract final class MockContent {
       saves: 8900,
       tags: const ['#Y2K', '#STREETWEAR', '#CYBER'],
       postedAgo: '1H AGO',
+      comments: 486,
+      shares: 1320,
+      views: 214000,
       outfitId: 'o_chrome',
       isLiked: true,
     ),
@@ -381,6 +384,9 @@ abstract final class MockContent {
       saves: 4100,
       tags: const ['#TECHWEAR', '#MOTO', '#NIGHT'],
       postedAgo: '3H AGO',
+      comments: 311,
+      shares: 860,
+      views: 132000,
       outfitId: 'o_moto_night',
       caption: 'Calibrated with tech pants, premium tactical gloves and waterproof reflective hood.',
     ),
@@ -396,6 +402,9 @@ abstract final class MockContent {
       saves: 3200,
       tags: const ['#BIKER', '#COBALT', '#VINTAGE'],
       postedAgo: '5H AGO',
+      comments: 254,
+      shares: 540,
+      views: 96500,
       outfitId: 'o_cobalt',
       caption: 'Cobalt leather over everything. Layers first, questions later.',
     ),
@@ -411,6 +420,9 @@ abstract final class MockContent {
       saves: 9700,
       tags: const ['#TOKYO', '#NEON', '#CYBERPUNK'],
       postedAgo: '8H AGO',
+      comments: 702,
+      shares: 2100,
+      views: 301000,
       outfitId: 'o_tokyo',
       caption: 'Grid lights, holo coach jacket. Last night in Shibuya.',
     ),
@@ -426,10 +438,61 @@ abstract final class MockContent {
       saves: 2500,
       tags: const ['#MOTO', '#CYBERPUNK', '#GRUNGE'],
       postedAgo: '11H AGO',
+      comments: 148,
+      shares: 390,
+      views: 58400,
       outfitId: 'o_moto',
       caption: 'Paris Moto Club Sunday ride fit.',
     ),
   ];
+
+  static String get myAvatar => _img('avatar_taylor_vance');
+
+  /// Seed comments for the Fashion Scroll comments sheet.
+  static List<OotdComment> commentsFor(String ootdId) {
+    OotdComment c(
+      String id,
+      String handle,
+      String avatar,
+      String text,
+      String ago, [
+      int likes = 0,
+    ]) => OotdComment(
+      id: '${ootdId}_$id',
+      handle: handle,
+      avatar: _img(avatar),
+      text: text,
+      ago: ago,
+      likes: likes,
+    );
+    return [
+      c(
+        '1',
+        'sofiamae',
+        'avatar_sofiamae',
+        'The proportions are unreal. Saving this for the weekend.',
+        '12M',
+        48,
+      ),
+      c(
+        '2',
+        'kenji.wears',
+        'avatar_kenji',
+        'Where are the boots from? Need them yesterday.',
+        '34M',
+        21,
+      ),
+      c(
+        '3',
+        'elena.fits',
+        'avatar_elena',
+        'Colour story is immaculate. 🔥',
+        '1H',
+        63,
+      ),
+      c('4', 'zayidk', 'avatar_zayid', 'This is the era. No notes.', '2H', 9),
+    ];
+  }
 
   static final List<Story> stories = [
     Story(

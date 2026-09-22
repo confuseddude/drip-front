@@ -35,6 +35,21 @@ class FeedController extends AsyncNotifier<List<Ootd>> {
     await ref.read(feedRepositoryProvider).setSaved(id, saved: saved);
   }
 
+  Future<void> addComment(String id, String text) async {
+    await ref.read(feedRepositoryProvider).addComment(id, text);
+    final current = state.value?.where((o) => o.id == id).firstOrNull;
+    if (current == null) return;
+    _replace(current.copyWith(comments: current.comments + 1));
+    ref.invalidate(commentsProvider(id));
+  }
+
+  Future<void> share(String id) async {
+    await ref.read(feedRepositoryProvider).recordShare(id);
+    final current = state.value?.where((o) => o.id == id).firstOrNull;
+    if (current == null) return;
+    _replace(current.copyWith(shares: current.shares + 1));
+  }
+
   Future<void> publish(Ootd post) async {
     await ref.read(feedRepositoryProvider).publish(post);
     state = AsyncData([post, ...?state.value]);
@@ -43,6 +58,11 @@ class FeedController extends AsyncNotifier<List<Ootd>> {
 
 final feedProvider = AsyncNotifierProvider<FeedController, List<Ootd>>(
   FeedController.new,
+);
+
+/// Comments for one OOTD (Fashion Scroll comments sheet).
+final commentsProvider = FutureProvider.family<List<OotdComment>, String>(
+  (ref, id) => ref.watch(feedRepositoryProvider).comments(id),
 );
 
 class StoriesController extends AsyncNotifier<List<Story>> {

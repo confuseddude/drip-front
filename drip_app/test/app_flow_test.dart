@@ -1,4 +1,6 @@
 import 'package:drip/app.dart';
+import 'package:drip/core/widgets/brand.dart';
+import 'package:drip/core/widgets/tap.dart';
 import 'package:drip/data/providers.dart';
 import 'package:drip/features/home/feed_controller.dart';
 import 'package:drip/features/session/session_controller.dart';
@@ -59,7 +61,7 @@ void main() {
     await boot(t);
 
     // Splash runs its launch sequence, then lands on the welcome screen.
-    expect(find.text('Drip'), findsOneWidget);
+    expect(find.byType(DripWordmark), findsOneWidget);
     await settle(t, 3200);
     expect(find.text('THE FIT FINDS YOU.'), findsOneWidget);
 
@@ -101,10 +103,12 @@ void main() {
 
     // Home feed.
     expect(container.read(sessionProvider).signedIn, isTrue);
-    expect(find.text('YOUR OOTD · FOLLOWED'), findsOneWidget);
-    expect(find.text('DRIP SCORE: 98'), findsOneWidget);
+    expect(find.text('Your story'), findsOneWidget);
+    expect(find.text('DRIP 98'), findsOneWidget);
     final before = container.read(feedProvider).requireValue.first;
-    await t.tap(find.text('♥').first);
+    await t.tap(
+      find.byWidgetPredicate((w) => w is Tap && w.semanticLabel == 'Unlike'),
+    );
     await settle(t);
     expect(
       container.read(feedProvider).requireValue.first.isLiked,
@@ -112,7 +116,7 @@ void main() {
     );
 
     // Discover filters by category.
-    await tapText(t, 'DISCOVER');
+    await tapText(t, 'SEARCH & DISCOVER  →');
     await settle(t, 800);
     expect(find.text('PASTEL SHOCK'), findsOneWidget);
     await tapText(t, 'GRUNGE');
@@ -124,6 +128,11 @@ void main() {
     await settle(t, 1200);
     expect(find.text('SETTINGS'), findsOneWidget);
     final push = container.read(settingsProvider).pushNotifications;
+    await t.scrollUntilVisible(
+      find.text('Push Notifications'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await t.tap(find.text('Push Notifications'));
     // Tapping the label does nothing: only the switch toggles.
     await settle(t);
@@ -153,7 +162,7 @@ void main() {
   ) async {
     await boot(t, prefs: {'session.signedIn': true, 'session.onboarded': true});
     await settle(t, 3200);
-    expect(find.text('YOUR OOTD · FOLLOWED'), findsOneWidget);
+    expect(find.text('Your story'), findsOneWidget);
   });
 
   testWidgets(

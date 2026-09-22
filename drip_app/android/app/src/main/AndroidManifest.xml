@@ -20,11 +20,167 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+        </activity>
+        <!-- Launcher icons, one per theme. Exactly one alias is enabled at a
+             time (the app switches them via the "drip/app_icon" channel in
+             MainActivity). The default theme's alias is enabled out of the box.
+             Each icon is that theme's poster. Regenerate with tool/build_assets.py. -->
+        <activity-alias
+            android:name=".Alias_retro_cyber"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_aurora_cyan"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_aurora_cyan"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_vault_cream"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_vault_cream"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_indigo_marble"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_indigo_marble"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_denim_stars"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_denim_stars"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_golden_hour"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_golden_hour"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_crimson_teal"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_crimson_teal"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_violet_bloom"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_violet_bloom"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_acid_lime"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_acid_lime"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_moss_archive"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_moss_archive"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_verdant_blur"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_verdant_blur"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_oxblood_linen"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_oxblood_linen"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".Alias_holo_pink"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_theme_holo_pink"
+            android:label="drip"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

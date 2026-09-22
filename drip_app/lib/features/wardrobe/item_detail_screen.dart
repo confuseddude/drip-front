@@ -220,7 +220,7 @@ class _Body extends ConsumerWidget {
           ),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(top: BorderSide(color: AppColors.elevated)),
@@ -234,7 +234,7 @@ class _Body extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         item.name.toUpperCase(),
-                        style: AppText.bungee(18),
+                        style: AppText.display(18),
                       ),
                     ),
                     if (item.price > 0)
@@ -367,7 +367,7 @@ class _Body extends ConsumerWidget {
                   label: 'CREATE FIT WITH THIS ✦',
                   height: 42,
                   radius: 16,
-                  textStyle: AppText.bungee(12),
+                  textStyle: AppText.display(12),
                   onPressed: () {
                     final studio = ref.read(studioProvider.notifier)
                       ..useSource(wardrobe: true);

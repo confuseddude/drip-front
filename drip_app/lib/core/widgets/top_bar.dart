@@ -87,7 +87,7 @@ class DripTopBar extends StatelessWidget {
     this.card = false,
     this.titleSize = 16,
     this.letterSpacing,
-    this.cardColor = AppColors.surface,
+    this.cardColor,
     this.height = 48,
   });
 
@@ -97,7 +97,7 @@ class DripTopBar extends StatelessWidget {
   final bool card;
   final double titleSize;
   final double? letterSpacing;
-  final Color cardColor;
+  final Color? cardColor;
   final double height;
 
   @override
@@ -115,7 +115,7 @@ class DripTopBar extends StatelessWidget {
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppText.bungee(titleSize, letterSpacing: letterSpacing),
+          style: AppText.display(titleSize, letterSpacing: letterSpacing),
         ),
         trailing: Padding(
           padding: const EdgeInsets.only(right: 6),
@@ -126,9 +126,9 @@ class DripTopBar extends StatelessWidget {
     if (!card) return bar;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: cardColor,
+        color: cardColor ?? AppColors.surface,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
-        border: const Border(bottom: BorderSide(color: AppColors.elevated)),
+        border: Border(bottom: BorderSide(color: AppColors.elevated)),
       ),
       child: bar,
     );

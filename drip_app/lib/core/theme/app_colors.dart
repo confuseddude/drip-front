@@ -5,11 +5,44 @@ abstract final class AppColors {
   /// Screen background (`#0E1018`).
   static const Color base = Color(0xFF0E1018);
 
-  /// Cards, headers, inputs (`#141824`).
-  static const Color surface = Color(0xFF141824);
+  /// Cards, headers, inputs (`#141824` in the default theme). Follows the
+  /// active theme: see [useSurfaces].
+  static Color get surface => _surface;
 
-  /// Elevated surfaces, borders, chips (`#1C2335`).
-  static const Color elevated = Color(0xFF1C2335);
+  /// Elevated surfaces, borders, chips (`#1C2335` in the default theme).
+  /// Follows the active theme: see [useSurfaces].
+  static Color get elevated => _elevated;
+
+  static Color _surface = const Color(0xFF141824);
+  static Color _elevated = const Color(0xFF1C2335);
+  static int _surfaceKey = 0;
+
+  /// Re-derives [surface] and [elevated] from a theme's tinted ground and
+  /// poster wash, so cards, inputs, chips and borders belong to the theme
+  /// instead of staying navy under every one. The default theme keeps the
+  /// original Figma values exactly. Returns whether anything changed (the app
+  /// then rebuilds so every screen picks the new colours up).
+  static bool useSurfaces({
+    required Color ground,
+    required Color wash,
+    required bool original,
+  }) {
+    final key = Object.hash(ground, wash, original);
+    if (key == _surfaceKey) return false;
+    _surfaceKey = key;
+    if (original) {
+      _surface = const Color(0xFF141824);
+      _elevated = const Color(0xFF1C2335);
+    } else {
+      final tinted = Color.alphaBlend(wash.withValues(alpha: 0.07), ground);
+      _surface = Color.alphaBlend(const Color(0x0AFFFFFF), tinted);
+      _elevated = Color.alphaBlend(
+        const Color(0x12FFFFFF),
+        Color.alphaBlend(wash.withValues(alpha: 0.17), ground),
+      );
+    }
+    return true;
+  }
 
   /// Primary text and light fills (`#E8DFC8`).
   static const Color cream = Color(0xFFE8DFC8);

@@ -134,7 +134,7 @@ class _Hero extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('CALIBRATE YOUR LOOK', style: AppText.bungee(22)),
+                Text('CALIBRATE YOUR LOOK', style: AppText.display(22)),
               ],
             ),
           ),
@@ -179,7 +179,7 @@ class _EntryCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppText.bungee(14)),
+                  Text(title, style: AppText.display(14)),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
@@ -241,7 +241,7 @@ class _TaylorPromo extends StatelessWidget {
             height: 28,
             radius: 12,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            textStyle: AppText.bungee(10),
+            textStyle: AppText.display(10),
             color: AppColors.cyan,
             onPressed: onTap,
           ),

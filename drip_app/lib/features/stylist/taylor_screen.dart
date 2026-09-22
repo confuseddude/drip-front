@@ -89,7 +89,7 @@ class TaylorScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(4),
@@ -176,7 +176,7 @@ class TaylorScreen extends ConsumerWidget {
                 height: 42,
                 radius: 12,
                 loading: loading,
-                textStyle: AppText.bungee(12),
+                textStyle: AppText.display(12),
                 onPressed: generate,
               ),
             ),

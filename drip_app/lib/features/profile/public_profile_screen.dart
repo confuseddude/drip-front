@@ -141,7 +141,7 @@ class _PublicViewState extends ConsumerState<_PublicView> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(24),
@@ -222,7 +222,7 @@ class _PublicViewState extends ConsumerState<_PublicView> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(24),
@@ -312,7 +312,7 @@ class _PrivateView extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user.name, style: AppText.bungee(18)),
+                        Text(user.name, style: AppText.display(18)),
                         const SizedBox(height: 4),
                         Text(
                           user.at,
@@ -342,7 +342,7 @@ class _PrivateView extends ConsumerWidget {
                       Text(
                         'PRIVATE ACCOUNT',
                         textAlign: TextAlign.center,
-                        style: AppText.bungee(14),
+                        style: AppText.display(14),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -362,7 +362,7 @@ class _PrivateView extends ConsumerWidget {
                         style: requested
                             ? AppButtonStyle.outline
                             : AppButtonStyle.primary,
-                        textStyle: AppText.bungee(12),
+                        textStyle: AppText.display(12),
                         onPressed: () {
                           ref
                               .read(accessRequestsProvider.notifier)

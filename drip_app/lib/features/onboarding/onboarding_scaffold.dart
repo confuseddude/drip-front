@@ -67,7 +67,7 @@ class OnboardingScaffold extends StatelessWidget {
                       textAlign: centerHeader
                           ? TextAlign.center
                           : TextAlign.start,
-                      style: AppText.bungee(
+                      style: AppText.display(
                         titleSize,
                         lineHeight: titleSize * 1.2,
                       ),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../motion.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
 import 'app_button.dart';
 
-/// Pulsing "calibrating" indicator in the Drip visual language.
+/// Loading indicator in the Drip visual language: the brand's red drop (the
+/// dot of the wordmark's "i") swells and settles, with a soft ripple. One
+/// element, one rhythm, so every wait reads as the same product.
 class LoadingState extends StatefulWidget {
   const LoadingState({
     super.key,
@@ -24,7 +27,7 @@ class _LoadingStateState extends State<LoadingState>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1100),
+    duration: const Duration(milliseconds: 1200),
   )..repeat();
 
   @override
@@ -36,35 +39,62 @@ class _LoadingStateState extends State<LoadingState>
   @override
   Widget build(BuildContext context) {
     final accent = context.palette.accent;
-    final dots = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < 3; i++)
-          AnimatedBuilder(
-            animation: _c,
-            builder: (context, _) {
-              final t = ((_c.value - i * 0.18) % 1.0);
-              final k = (t < 0.5 ? t * 2 : (1 - t) * 2).clamp(0.0, 1.0);
-              return Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: Color.lerp(AppColors.elevated, accent, k),
-                  shape: BoxShape.circle,
+    final reduced = Motion.reduced(context);
+    final size = widget.compact ? 10.0 : 14.0;
+    final drop = SizedBox(
+      width: size * 3,
+      height: size * 3,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) {
+          final t = reduced ? 0.5 : _c.value;
+          // Swell fast, settle slow: ease-out on the rise.
+          final swell = Curves.easeOutCubic.transform(t < 0.4 ? t / 0.4 : 1);
+          final settle = t < 0.4 ? 0.0 : (t - 0.4) / 0.6;
+          final scale = 0.78 + 0.22 * swell - 0.06 * settle;
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Opacity(
+                opacity: (1 - t) * 0.5,
+                child: Container(
+                  width: size * (1 + t * 1.8),
+                  height: size * (1 + t * 1.8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: accent, width: 1),
+                  ),
                 ),
-              );
-            },
-          ),
-      ],
+              ),
+              Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: size,
+                  height: size * 0.86,
+                  decoration: BoxDecoration(
+                    color: accent,
+                    borderRadius: BorderRadius.circular(size),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.45),
+                        blurRadius: 12,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
-    if (widget.compact) return Center(child: dots);
+    if (widget.compact) return Center(child: drop);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          dots,
-          const SizedBox(height: 14),
+          drop,
+          const SizedBox(height: 6),
           Text(
             widget.label,
             style: AppText.mono(9, color: AppColors.muted, letterSpacing: 2),
@@ -115,7 +145,11 @@ class EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(title, textAlign: TextAlign.center, style: AppText.bungee(14)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppText.display(14),
+            ),
             const SizedBox(height: 8),
             Text(
               message,

@@ -1,9 +1,12 @@
+import '../settings/theme_bar.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/controls.dart';
 import '../../core/widgets/overlays.dart';
@@ -88,7 +91,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(bottom: BorderSide(color: AppColors.elevated)),
                 ),
                 child: Row(
@@ -208,7 +211,9 @@ class _Body extends ConsumerWidget {
     };
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.paddingOf(context).bottom + 24,
+      ),
       children: [
         Padding(
           padding: const EdgeInsets.all(16),
@@ -216,7 +221,7 @@ class _Body extends ConsumerWidget {
             children: [
               ProfileIntro(
                 user: user,
-                ringColor: AppColors.cyan,
+                ringColor: context.palette.secondary,
                 onEdit: onEdit,
               ),
               const SizedBox(height: 12),
@@ -227,6 +232,10 @@ class _Body extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: ThemeBar(),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

@@ -25,6 +25,8 @@ class SettingsController extends Notifier<UserSettings> {
   Future<void> setStyleAlerts(bool v) =>
       _update(state.copyWith(styleMatchAlerts: v));
   Future<void> setSkin(DripSkin v) => _update(state.copyWith(skin: v));
+  Future<void> setMatchAppIcon(bool v) =>
+      _update(state.copyWith(matchAppIcon: v));
 }
 
 final settingsProvider = NotifierProvider<SettingsController, UserSettings>(
@@ -46,7 +48,28 @@ final connectedAccountsProvider =
       ConnectedAccountsController.new,
     );
 
-/// The active skin, watched by the app root to rebuild the theme.
+/// A skin being previewed in the theme picker (not yet saved). Null when no
+/// preview is running; cleared when the picker closes.
+class PreviewSkinController extends Notifier<DripSkin?> {
+  @override
+  DripSkin? build() => null;
+
+  void set(DripSkin? skin) => state = skin;
+}
+
+final previewSkinProvider = NotifierProvider<PreviewSkinController, DripSkin?>(
+  PreviewSkinController.new,
+);
+
+/// The skin the app is drawn with: the live preview if one is running,
+/// otherwise the saved choice. Watched by the app root to rebuild the theme.
 final skinProvider = Provider<DripSkin>(
+  (ref) =>
+      ref.watch(previewSkinProvider) ??
+      ref.watch(settingsProvider.select((s) => s.skin)),
+);
+
+/// The saved (persisted) skin, regardless of any preview.
+final savedSkinProvider = Provider<DripSkin>(
   (ref) => ref.watch(settingsProvider.select((s) => s.skin)),
 );

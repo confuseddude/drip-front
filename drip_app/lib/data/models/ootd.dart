@@ -15,6 +15,9 @@ class Ootd {
     this.outfitId,
     this.caption = '',
     this.location = '',
+    this.comments = 0,
+    this.shares = 0,
+    this.views = 0,
     this.isLiked = false,
     this.isSaved = false,
   });
@@ -33,10 +36,20 @@ class Ootd {
   final String? outfitId;
   final String caption;
   final String location;
+  final int comments;
+  final int shares;
+  final int views;
   final bool isLiked;
   final bool isSaved;
 
-  Ootd copyWith({bool? isLiked, bool? isSaved, int? likes, int? saves}) => Ootd(
+  Ootd copyWith({
+    bool? isLiked,
+    bool? isSaved,
+    int? likes,
+    int? saves,
+    int? comments,
+    int? shares,
+  }) => Ootd(
     id: id,
     creatorHandle: creatorHandle,
     creatorAvatar: creatorAvatar,
@@ -51,6 +64,9 @@ class Ootd {
     outfitId: outfitId,
     caption: caption,
     location: location,
+    comments: comments ?? this.comments,
+    shares: shares ?? this.shares,
+    views: views,
     isLiked: isLiked ?? this.isLiked,
     isSaved: isSaved ?? this.isSaved,
   );
@@ -77,4 +93,23 @@ class Story {
     unseen: unseen ?? this.unseen,
     ootdId: ootdId,
   );
+}
+
+/// A comment on an OOTD (Fashion Scroll comments sheet).
+class OotdComment {
+  const OotdComment({
+    required this.id,
+    required this.handle,
+    required this.avatar,
+    required this.text,
+    required this.ago,
+    this.likes = 0,
+  });
+
+  final String id;
+  final String handle;
+  final String avatar;
+  final String text;
+  final String ago;
+  final int likes;
 }

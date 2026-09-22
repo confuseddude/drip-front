@@ -117,7 +117,7 @@ class _CreatorRow extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: AppText.bungee(12),
+                  style: AppText.display(12),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -1,3 +1,5 @@
+import 'theme_bar.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -98,7 +100,7 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => Navigator.of(ctx).pop(o),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(bottom: BorderSide(color: AppColors.elevated)),
                 ),
                 child: Row(
@@ -190,45 +192,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _skin(BuildContext context, WidgetRef ref) async {
-    final settings = ref.read(settingsProvider);
-    final skin = await showDripSheet<DripSkin>(
-      context,
-      builder: (ctx) => SheetContent(
-        title: 'VIBE SKIN',
-        subtitle:
-            'Recolours buttons, toggles and active states across the app.',
-        children: [
-          for (final s in DripSkin.values)
-            Tap(
-              onTap: () => Navigator.of(ctx).pop(s),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppColors.elevated)),
-                ),
-                child: Row(
-                  children: [
-                    _Swatches(skin: s, size: 14),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        s.label,
-                        style: AppText.manrope(14, weight: FontWeight.w500),
-                      ),
-                    ),
-                    if (s == settings.skin)
-                      Text('✓', style: AppText.mono(14, color: s.accent)),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-    if (skin != null) await ref.read(settingsProvider.notifier).setSkin(skin);
-  }
-
   Future<void> _connected(BuildContext context) {
     return showDripSheet<void>(
       context,
@@ -241,7 +204,7 @@ class SettingsScreen extends ConsumerWidget {
               for (final name in const ['Discord', 'Spotify', 'Instagram'])
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: AppColors.elevated),
                     ),
@@ -332,7 +295,7 @@ class SettingsScreen extends ConsumerWidget {
                     child: Center(
                       child: Text(
                         'SETTINGS',
-                        style: AppText.bungee(16, letterSpacing: 1),
+                        style: AppText.display(16, letterSpacing: 1),
                       ),
                     ),
                   ),
@@ -373,9 +336,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                               child: ClipOval(
                                 child: me == null
-                                    ? const ColoredBox(
-                                        color: AppColors.elevated,
-                                      )
+                                    ? ColoredBox(color: AppColors.elevated)
                                     : DripImage(me.avatar),
                               ),
                             ),
@@ -386,7 +347,7 @@ class SettingsScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     me?.name ?? 'Taylor Vance',
-                                    style: AppText.bungee(14),
+                                    style: AppText.display(14),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -500,9 +461,27 @@ class SettingsScreen extends ConsumerWidget {
                 _Group(
                   children: [
                     row(
-                      'Vibe Skin',
+                      'Themes',
                       value: s.skin.label,
-                      onTap: () => _skin(context, ref),
+                      onTap: () => context.push('/themes'),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(12, 4, 12, 12),
+                      child: ThemeBar(),
+                    ),
+                    row(
+                      'Match App Icon to Theme',
+                      trailing: DripSwitch(
+                        value: s.matchAppIcon,
+                        onChanged: notifier.setMatchAppIcon,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: Text(
+                        'Your home-screen icon updates the next time you leave the app.',
+                        style: AppText.manrope(11, color: AppColors.muted),
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -601,7 +580,7 @@ class SettingsScreen extends ConsumerWidget {
                     style: AppButtonStyle.danger,
                     height: 48,
                     radius: 20,
-                    textStyle: AppText.bungee(13, letterSpacing: 1),
+                    textStyle: AppText.display(13, letterSpacing: 1),
                     onPressed: () async {
                       final ok = await showDripConfirm(
                         context,

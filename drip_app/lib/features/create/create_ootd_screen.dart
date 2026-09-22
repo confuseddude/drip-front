@@ -91,11 +91,11 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
               fillColor: AppColors.base,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.elevated),
+                borderSide: BorderSide(color: AppColors.elevated),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.elevated),
+                borderSide: BorderSide(color: AppColors.elevated),
               ),
             ),
           ),
@@ -125,7 +125,7 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
               onTap: () => Navigator.of(ctx).pop(a),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(bottom: BorderSide(color: AppColors.elevated)),
                 ),
                 child: Row(
@@ -191,7 +191,7 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
                       style: AppText.mono(14, color: AppColors.muted),
                     ),
                   ),
-                  Text('CREATE LOOK', style: AppText.bungee(16)),
+                  Text('CREATE LOOK', style: AppText.display(16)),
                   Tap(
                     onTap: () {
                       ref.read(createOotdProvider.notifier).saveDraft();
@@ -468,7 +468,7 @@ class _CreateOotdScreenState extends ConsumerState<CreateOotdScreen> {
               height: 45,
               loading: s.posting,
               onPressed: _post,
-              textStyle: AppText.bungee(14),
+              textStyle: AppText.display(14),
             ),
           ),
         ],

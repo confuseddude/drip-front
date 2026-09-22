@@ -188,7 +188,7 @@ class _RecentSearches extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0),
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.all(Radius.circular(24)),
       ),
@@ -224,9 +224,7 @@ class _RecentSearches extends ConsumerWidget {
                 decoration: BoxDecoration(
                   border: r == recents.last
                       ? null
-                      : const Border(
-                          bottom: BorderSide(color: AppColors.elevated),
-                        ),
+                      : Border(bottom: BorderSide(color: AppColors.elevated)),
                 ),
                 child: Row(
                   children: [
@@ -282,7 +280,7 @@ class _TrendingVibes extends ConsumerWidget {
     final vibes = ref.watch(trendingVibesProvider).value ?? const <String>[];
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.all(Radius.circular(24)),
       ),
@@ -382,7 +380,7 @@ class _LiveResults extends ConsumerWidget {
                       ),
                       Text(
                         '${o.rate}',
-                        style: AppText.bungee(
+                        style: AppText.display(
                           14,
                           color: context.palette.accent,
                         ),

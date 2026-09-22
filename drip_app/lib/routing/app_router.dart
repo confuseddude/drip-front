@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../features/activity/activity_screen.dart';
 import '../features/create/create_ootd_screen.dart';
+import '../core/motion.dart';
 import '../features/discover/discover_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/home/ootd_viewer_screen.dart';
+import '../features/scroll/fashion_scroll_screen.dart';
 import '../features/onboarding/colour_theory_screen.dart';
 import '../features/onboarding/follow_people_screen.dart';
 import '../features/onboarding/intro_screen.dart';
@@ -23,6 +25,7 @@ import '../features/search/search_results_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/session/session_controller.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/settings/theme_picker_screen.dart';
 import '../features/social/followers_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/studio/outfit_builder_screen.dart';
@@ -78,6 +81,51 @@ CustomTransitionPage<void> dripPage(
   );
 }
 
+/// Tab-root transition: a plain sideways push. The incoming page slides in
+/// from the side the lens moved towards while the outgoing one slides out the
+/// other way, so the two travel together like pages of a pager.
+///
+/// It deliberately animates position only. Fading a whole screen means
+/// rendering it to an offscreen layer every frame (and these screens hold blur
+/// and many images), which is exactly what made tab changes stutter on
+/// mid-range phones; a translation is just a compositor offset.
+CustomTransitionPage<void> tabPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: Motion.page,
+    reverseTransitionDuration: Motion.page,
+    transitionsBuilder: (context, animation, secondary, child) {
+      // Not a tab move (opened from a card): the shared image carries the
+      // transition, the page just fades in behind it.
+      if (Motion.reduced(context) || TabDirection.value == 0) {
+        return FadeTransition(opacity: animation, child: child);
+      }
+      final ease = CurvedAnimation(parent: animation, curve: Motion.drawer);
+      final easeOut = CurvedAnimation(parent: secondary, curve: Motion.drawer);
+      return AnimatedBuilder(
+        animation: Listenable.merge([ease, easeOut]),
+        child: child,
+        builder: (context, child) {
+          // Read the direction live: the outgoing page was built for an
+          // earlier move, but must leave the way the *current* move goes.
+          final dir = TabDirection.value.toDouble();
+          // Entering runs 1 → 0 from the travel side; leaving (its animation
+          // reverses) runs 0 → -1 the opposite way; a page covered by another
+          // slides away via [secondary].
+          final leaving = animation.status == AnimationStatus.reverse;
+          final enter = (1 - ease.value) * (leaving ? -dir : dir);
+          final covered = -dir * easeOut.value;
+          return FractionalTranslation(
+            translation: Offset(enter + covered, 0),
+            child: child,
+          );
+        },
+      );
+    },
+  );
+}
+
 class _SessionRefresh extends ChangeNotifier {
   _SessionRefresh(Ref ref) {
     ref.listen(sessionProvider, (_, _) => notifyListeners());
@@ -124,6 +172,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/ootd/:id',
         (s) => OotdViewerScreen(ootdId: s.pathParameters['id']!),
       ),
+      _page('/themes', (_) => const ThemePickerScreen(), fade: true),
       _page('/stylist', (_) => const TaylorScreen()),
       _page('/stylist/result', (_) => const TaylorResultScreen()),
       _page('/wardrobe/capture', (_) => const AddToWardrobeScreen()),
@@ -133,7 +182,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) =>
             MainShell(path: state.uri.path, child: child),
         routes: [
-          _page('/home', (_) => const HomeScreen(), fade: true),
+          GoRoute(
+            path: '/home',
+            pageBuilder: (context, state) => tabPage(state, const HomeScreen()),
+          ),
+          GoRoute(
+            path: '/scroll',
+            pageBuilder: (context, state) => tabPage(
+              state,
+              FashionScrollScreen(startId: state.uri.queryParameters['id']),
+            ),
+          ),
           _page('/create', (_) => const CreateOotdScreen()),
           _page('/discover', (_) => const DiscoverScreen(), fade: true),
           _page('/search', (_) => const SearchScreen()),
@@ -147,13 +206,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           _page('/studio', (_) => const StudioHomeScreen()),
           _page('/studio/builder', (_) => const OutfitBuilderScreen()),
-          _page('/wardrobe', (_) => const WardrobeScreen(), fade: true),
+          GoRoute(
+            path: '/wardrobe',
+            pageBuilder: (context, state) =>
+                tabPage(state, const WardrobeScreen()),
+          ),
           _page(
             '/wardrobe/item/:id',
             (s) => ItemDetailScreen(itemId: s.pathParameters['id']!),
           ),
           _page('/saved', (_) => const SavedOutfitsScreen()),
-          _page('/me', (_) => const MyProfileScreen(), fade: true),
+          GoRoute(
+            path: '/me',
+            pageBuilder: (context, state) =>
+                tabPage(state, const MyProfileScreen()),
+          ),
           _page('/me/colour-theory', (_) => const ColourTheoryProfileScreen()),
           _page(
             '/u/:handle',

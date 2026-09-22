@@ -205,7 +205,7 @@ class _PhotoshootScreenState extends ConsumerState<PhotoshootScreen> {
                                         item.name.toUpperCase(),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppText.bungee(
+                                        style: AppText.display(
                                           10,
                                           lineHeight: 12,
                                           color: selected
@@ -273,7 +273,7 @@ class _PhotoshootScreenState extends ConsumerState<PhotoshootScreen> {
               height: 45,
               radius: 16,
               loading: s.render.isLoading,
-              textStyle: AppText.bungee(14),
+              textStyle: AppText.display(14),
               onPressed: _generate,
             ),
           ),
@@ -358,7 +358,7 @@ class _SceneCard extends StatelessWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: scene.image == null
-                      ? const ColoredBox(color: AppColors.elevated)
+                      ? ColoredBox(color: AppColors.elevated)
                       : DripImage(scene.image!),
                 ),
               ),

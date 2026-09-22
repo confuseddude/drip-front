@@ -131,7 +131,7 @@ class _MoodTile extends StatelessWidget {
                             ),
                     ),
                     const Spacer(),
-                    Text(mood.label, style: AppText.bungee(14)),
+                    Text(mood.label, style: AppText.display(14)),
                   ],
                 ),
               ),

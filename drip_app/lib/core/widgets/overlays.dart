@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import 'app_button.dart';
+import 'bottom_nav.dart';
+import 'glass.dart';
 
-/// Bottom sheet with the Drip drag-handle and keyboard-aware padding.
+/// Bottom sheet in DRIP's glass material, with a drag-handle and
+/// keyboard-aware padding. Slides in on the iOS drawer curve (fast start, soft
+/// landing) and leaves quicker than it arrives.
 Future<T?> showDripSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
@@ -15,32 +20,40 @@ Future<T?> showDripSheet<T>(
     isScrollControlled: true,
     useRootNavigator: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
-    barrierColor: const Color(0xB3000000),
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    barrierColor: const Color(0x8C000000),
     showDragHandle: false,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      side: BorderSide(color: AppColors.elevated),
+    sheetAnimationStyle: AnimationStyle(
+      duration: Motion.content,
+      reverseDuration: Motion.nav,
+      curve: Motion.drawer,
+      reverseCurve: Curves.easeIn,
     ),
     builder: (ctx) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.elevated,
-                borderRadius: BorderRadius.circular(2),
+      child: Glass(
+        thickness: GlassThickness.thick,
+        shadow: false,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.28),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Flexible(child: builder(ctx)),
-          ],
+              const SizedBox(height: 6),
+              Flexible(child: builder(ctx)),
+            ],
+          ),
         ),
       ),
     ),
@@ -67,7 +80,7 @@ class SheetContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: AppText.bungee(16)),
+          Text(title, style: AppText.display(16)),
           if (subtitle != null) ...[
             const SizedBox(height: 6),
             Text(
@@ -107,7 +120,7 @@ Future<bool> showDripConfirm(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: AppText.bungee(16)),
+            Text(title, style: AppText.display(16)),
             const SizedBox(height: 10),
             Text(
               message,
@@ -151,7 +164,7 @@ Future<bool> showDripConfirm(
   return result ?? false;
 }
 
-/// Brief floating message.
+/// Brief floating message: a glass pill that clears the floating nav.
 void showDripToast(BuildContext context, String message) {
   final m = ScaffoldMessenger.maybeOf(context);
   if (m == null) return;
@@ -159,9 +172,22 @@ void showDripToast(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(message.toUpperCase()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
         duration: const Duration(milliseconds: 2200),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+        padding: EdgeInsets.zero,
+        margin: EdgeInsets.fromLTRB(20, 0, 20, NavMetrics.extent(context) + 4),
+        content: Glass(
+          radius: 18,
+          thickness: GlassThickness.regular,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          child: Text(
+            message.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: AppText.mono(11, letterSpacing: 0.6),
+          ),
+        ),
       ),
     );
 }

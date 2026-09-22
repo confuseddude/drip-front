@@ -89,7 +89,7 @@ class _StepCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppText.bungee(16)),
+                Text(title, style: AppText.display(16)),
                 const SizedBox(height: 4),
                 Text(
                   body,

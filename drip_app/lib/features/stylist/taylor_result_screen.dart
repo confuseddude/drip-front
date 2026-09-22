@@ -93,7 +93,7 @@ class TaylorResultScreen extends ConsumerWidget {
                           height: 36,
                           radius: 16,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          textStyle: AppText.bungee(10),
+                          textStyle: AppText.display(10),
                           onPressed: () => context.push('/studio/builder'),
                         ),
                       ),
@@ -104,7 +104,7 @@ class TaylorResultScreen extends ConsumerWidget {
                           height: 36,
                           radius: 16,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          textStyle: AppText.bungee(10),
+                          textStyle: AppText.display(10),
                           onPressed: () {
                             ref
                                 .read(bagProvider.notifier)
@@ -190,7 +190,7 @@ class _Banner extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       blueprint.headline,
-                      style: AppText.bungee(28, lineHeight: 34),
+                      style: AppText.display(28, lineHeight: 34),
                     ),
                   ],
                 ),
@@ -235,7 +235,7 @@ class _Explanation extends StatelessWidget {
             style: AppText.manrope(13, lineHeight: 20),
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.elevated),
+          Divider(height: 1, color: AppColors.elevated),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

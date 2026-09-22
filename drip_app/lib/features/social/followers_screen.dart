@@ -76,7 +76,7 @@ class UserRow extends StatelessWidget {
                     user.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.bungee(11),
+                    style: AppText.display(11),
                   ),
                   const SizedBox(height: 2),
                   Text(user.at, style: AppText.mono(9, color: AppColors.cyan)),

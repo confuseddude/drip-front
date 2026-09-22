@@ -30,6 +30,7 @@ class UserSettings {
     this.pushNotifications = true,
     this.styleMatchAlerts = true,
     this.skin = DripSkin.retroCyber,
+    this.matchAppIcon = true,
   });
 
   final String username;
@@ -41,6 +42,9 @@ class UserSettings {
   final bool styleMatchAlerts;
   final DripSkin skin;
 
+  /// Launcher icon follows the theme's poster (otherwise the default icon).
+  final bool matchAppIcon;
+
   UserSettings copyWith({
     String? username,
     String? email,
@@ -50,6 +54,7 @@ class UserSettings {
     bool? pushNotifications,
     bool? styleMatchAlerts,
     DripSkin? skin,
+    bool? matchAppIcon,
   }) => UserSettings(
     username: username ?? this.username,
     email: email ?? this.email,
@@ -59,5 +64,6 @@ class UserSettings {
     pushNotifications: pushNotifications ?? this.pushNotifications,
     styleMatchAlerts: styleMatchAlerts ?? this.styleMatchAlerts,
     skin: skin ?? this.skin,
+    matchAppIcon: matchAppIcon ?? this.matchAppIcon,
   );
 }

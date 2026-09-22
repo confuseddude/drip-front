@@ -41,7 +41,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
               onTap: () => Navigator.of(ctx).pop(c),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(bottom: BorderSide(color: AppColors.elevated)),
                 ),
                 child: Row(
@@ -126,7 +126,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                     },
                     child: Text('◀ UNDO', style: AppText.inter(16)),
                   ),
-                  Text('STUDIO CANVAS', style: AppText.bungee(13)),
+                  Text('STUDIO CANVAS', style: AppText.display(13)),
                   Tap(
                     onTap: controller.reset,
                     child: Text(
@@ -221,7 +221,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                                   ),
                                   child: Text(
                                     '✦ RANDOMIZE FIT ✦',
-                                    style: AppText.bungee(
+                                    style: AppText.display(
                                       10,
                                       color: AppColors.base,
                                     ),
@@ -302,7 +302,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                     height: 36,
                     radius: 18,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: AppText.bungee(10),
+                    textStyle: AppText.display(10),
                     onPressed: () => context.push('/photoshoot'),
                   ),
                 ),
@@ -314,7 +314,7 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
                     radius: 18,
                     loading: _publishing,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: AppText.bungee(10),
+                    textStyle: AppText.display(10),
                     onPressed: _publish,
                   ),
                 ),

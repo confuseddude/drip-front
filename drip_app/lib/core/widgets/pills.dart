@@ -66,7 +66,7 @@ class TagChip extends StatelessWidget {
     this.label, {
     super.key,
     this.color = AppColors.muted,
-    this.borderColor = AppColors.elevated,
+    this.borderColor,
     this.fill = AppColors.base,
     this.radius = 6,
     this.size = 8,
@@ -75,7 +75,7 @@ class TagChip extends StatelessWidget {
 
   final String label;
   final Color color;
-  final Color borderColor;
+  final Color? borderColor;
   final Color fill;
   final double radius;
   final double size;
@@ -88,7 +88,7 @@ class TagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: fill,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColor ?? AppColors.elevated),
       ),
       child: Text(label, style: AppText.mono(size, color: color)),
     );

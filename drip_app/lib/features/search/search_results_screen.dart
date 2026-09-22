@@ -34,7 +34,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       child: Column(
         children: [
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.elevated)),
             ),
             child: DripTopBar(
@@ -214,7 +214,7 @@ class _Body extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(c.title, style: AppText.bungee(13)),
+                            Text(c.title, style: AppText.display(13)),
                             const SizedBox(height: 4),
                             Text(
                               '${c.count} FITS · #${c.tag}',

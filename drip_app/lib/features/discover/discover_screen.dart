@@ -42,7 +42,7 @@ class DiscoverScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('DISCOVER', style: AppText.bungee(22)),
+                    Text('DISCOVER', style: AppText.display(22)),
                     Tap(
                       onTap: () => context.push('/settings'),
                       semanticLabel: 'Settings',

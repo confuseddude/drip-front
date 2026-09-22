@@ -7,18 +7,48 @@ import 'drip_skin.dart';
 /// Skin-dependent colours, readable anywhere via `context.palette`.
 @immutable
 class DripPalette extends ThemeExtension<DripPalette> {
-  const DripPalette({required this.accent, required this.secondary});
+  const DripPalette({
+    required this.accent,
+    required this.secondary,
+    required this.wash,
+    required this.ground,
+    required this.clarity,
+    required this.roundness,
+  });
 
   final Color accent;
   final Color secondary;
+
+  /// Saturated poster mid-tone: tints glass surfaces and the ambient scrim.
+  final Color wash;
+
+  /// The theme's tinted near-black; glass is built from it.
+  final Color ground;
+
+  /// Glass feel, 0 (frosted paper) … 1 (clear crystal).
+  final double clarity;
+
+  /// Glass corner scale (below 1 squarer, above 1 softer).
+  final double roundness;
 
   /// Text/icon colour that sits on top of [accent].
   Color get onAccent => AppColors.base;
 
   @override
-  DripPalette copyWith({Color? accent, Color? secondary}) => DripPalette(
+  DripPalette copyWith({
+    Color? accent,
+    Color? secondary,
+    Color? wash,
+    Color? ground,
+    double? clarity,
+    double? roundness,
+  }) => DripPalette(
     accent: accent ?? this.accent,
     secondary: secondary ?? this.secondary,
+    wash: wash ?? this.wash,
+    ground: ground ?? this.ground,
+    clarity: clarity ?? this.clarity,
+    roundness: roundness ?? this.roundness,
   );
 
   @override
@@ -27,6 +57,10 @@ class DripPalette extends ThemeExtension<DripPalette> {
     return DripPalette(
       accent: Color.lerp(accent, other.accent, t)!,
       secondary: Color.lerp(secondary, other.secondary, t)!,
+      wash: Color.lerp(wash, other.wash, t)!,
+      ground: Color.lerp(ground, other.ground, t)!,
+      clarity: clarity + (other.clarity - clarity) * t,
+      roundness: roundness + (other.roundness - roundness) * t,
     );
   }
 }
@@ -38,7 +72,7 @@ extension DripThemeContext on BuildContext {
 abstract final class AppTheme {
   static ThemeData build(DripSkin skin) {
     final scheme = ColorScheme.dark(
-      surface: AppColors.base,
+      surface: skin.ground,
       onSurface: AppColors.cream,
       primary: skin.accent,
       onPrimary: AppColors.base,
@@ -51,8 +85,8 @@ abstract final class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.base,
-      canvasColor: AppColors.base,
+      scaffoldBackgroundColor: skin.ground,
+      canvasColor: skin.ground,
       splashFactory: NoSplash.splashFactory,
       highlightColor: AppColors.transparent,
       fontFamily: 'Manrope',
@@ -71,10 +105,10 @@ abstract final class AppTheme {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.elevated),
+          side: BorderSide(color: AppColors.elevated),
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         modalBackgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -87,7 +121,16 @@ abstract final class AppTheme {
         contentTextStyle: AppText.mono(11),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      extensions: [DripPalette(accent: skin.accent, secondary: skin.secondary)],
+      extensions: [
+        DripPalette(
+          accent: skin.accent,
+          secondary: skin.secondary,
+          wash: skin.wash,
+          ground: skin.ground,
+          clarity: skin.clarity,
+          roundness: skin.roundness,
+        ),
+      ],
     );
   }
 }

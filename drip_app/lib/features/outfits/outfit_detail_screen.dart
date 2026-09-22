@@ -129,7 +129,7 @@ class _Content extends ConsumerWidget {
                 _Hero(outfit: outfit, hotspots: _hotspots),
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(24),
@@ -145,7 +145,7 @@ class _Content extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(outfit.title, style: AppText.bungee(18)),
+                                Text(outfit.title, style: AppText.display(18)),
                                 const SizedBox(height: 4),
                                 Wrap(
                                   spacing: 4,
@@ -167,7 +167,7 @@ class _Content extends ConsumerWidget {
                             children: [
                               Text(
                                 '✦ ${outfit.rate}',
-                                style: AppText.bungee(22, color: accent),
+                                style: AppText.display(22, color: accent),
                               ),
                               const SizedBox(height: 2),
                               Text(

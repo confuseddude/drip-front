@@ -167,7 +167,7 @@ class OutfitCard extends ConsumerWidget {
               outfit.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.bungee(10),
+              style: AppText.display(10),
             ),
             const SizedBox(height: 2),
             Text(

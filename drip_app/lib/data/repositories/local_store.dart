@@ -60,6 +60,7 @@ class LocalStore {
       styleMatchAlerts:
           _prefs.getBool('settings.styleAlerts') ?? d.styleMatchAlerts,
       skin: DripSkin.fromId(_prefs.getString('settings.skin')),
+      matchAppIcon: _prefs.getBool('settings.matchIcon') ?? d.matchAppIcon,
     );
   }
 
@@ -72,6 +73,7 @@ class LocalStore {
     await _prefs.setBool('settings.push', s.pushNotifications);
     await _prefs.setBool('settings.styleAlerts', s.styleMatchAlerts);
     await _prefs.setString('settings.skin', s.skin.id);
+    await _prefs.setBool('settings.matchIcon', s.matchAppIcon);
   }
 
   /// Wipes everything tied to the signed-in account (logout).

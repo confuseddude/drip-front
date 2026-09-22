@@ -31,7 +31,7 @@ class _BagSheet extends ConsumerWidget {
         for (final line in bag)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.elevated)),
             ),
             child: Row(
@@ -81,7 +81,7 @@ class _BagSheet extends ConsumerWidget {
                   letterSpacing: 1,
                 ),
               ),
-              Text(formatPrice(total), style: AppText.bungee(16)),
+              Text(formatPrice(total), style: AppText.display(16)),
             ],
           ),
           const SizedBox(height: 16),
