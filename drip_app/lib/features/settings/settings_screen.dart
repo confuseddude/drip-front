@@ -24,6 +24,7 @@ import '../session/session_controller.dart';
 import '../social/social_controller.dart';
 import '../onboarding/onboarding_data.dart';
 import 'settings_controller.dart';
+import '../tour/tour.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -356,6 +357,10 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         );
                       },
+                    ),
+                    row(
+                      'Take the Tour',
+                      onTap: () => ref.read(tourProvider.notifier).start(),
                     ),
                     row(
                       'Privacy Policy',

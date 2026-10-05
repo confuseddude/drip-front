@@ -29,6 +29,7 @@ import '../outfits/shop_sheet.dart';
 import '../report/report_bug_sheet.dart';
 import 'fit_pieces_sheet.dart';
 import 'shop_the_look.dart';
+import '../tour/tour.dart';
 
 /// The Fashion Scroll: full-screen, one fit at a time, snapping vertically.
 ///
@@ -537,17 +538,20 @@ class _ReelPageState extends ConsumerState<_ReelPage> {
                 children: [
                   SizedBox(height: top),
                   Expanded(
-                    child: _Stage(
-                      outfit: outfit,
-                      expanded: _expanded,
-                      shop: ShopTheLook(
-                        spots: _spots,
-                        onOpen: _expanded ? null : _openShop,
-                        child: const SizedBox.shrink(),
+                    child: TourAnchor(
+                      id: 'scroll.stage',
+                      child: _Stage(
+                        outfit: outfit,
+                        expanded: _expanded,
+                        shop: ShopTheLook(
+                          spots: _spots,
+                          onOpen: _expanded ? null : _openShop,
+                          child: const SizedBox.shrink(),
+                        ),
+                        onBackground: (c) {
+                          if (mounted && c != _bg) setState(() => _bg = c);
+                        },
                       ),
-                      onBackground: (c) {
-                        if (mounted && c != _bg) setState(() => _bg = c);
-                      },
                     ),
                   ),
                   _InfoPanel(
@@ -618,7 +622,10 @@ class _Stage extends StatelessWidget {
                   child: AnimatedOpacity(
                     opacity: expanded ? 0 : 1,
                     duration: Motion.dur(context, Motion.quick),
-                    child: _ActionRail(outfit: outfit),
+                    child: TourAnchor(
+                      id: 'scroll.rail',
+                      child: _ActionRail(outfit: outfit),
+                    ),
                   ),
                 ),
               ),
