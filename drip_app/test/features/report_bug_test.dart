@@ -89,6 +89,22 @@ void main() {
       },
     );
 
+    test(
+      'over the hourly limit (429), reports wait instead of being lost',
+      () async {
+        final limited = repo(
+          (_) async => http.Response(
+            '{"error":"Too many reports"}',
+            429,
+            headers: {'retry-after': '1800'},
+          ),
+        );
+        expect(await limited.submit(_report), ReportOutcome.queued);
+        await limited.flush();
+        expect(store.queuedReports, hasLength(1));
+      },
+    );
+
     test('a refused report is not retried forever', () async {
       await store.setQueuedReports([jsonEncode(_report.toJson())]);
       await repo((_) async => http.Response('{"error":"Bad"}', 400)).flush();

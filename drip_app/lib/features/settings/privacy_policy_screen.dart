@@ -150,8 +150,8 @@ abstract final class PrivacyPolicy {
         ),
         (
           'Your profile.',
-          'Your username, display name and profile photo, if you add one. '
-              'These are public: other people can see them.',
+          'Drip shows you by the name on your Google account. In this beta '
+              'nothing you add to Drip is public.',
         ),
         (
           'Your style.',
@@ -284,7 +284,12 @@ abstract final class PrivacyPolicy {
     PolicySection(
       'Who can see what',
       points: [
-        ('Public.', 'Your profile photo, display name and username.'),
+        (
+          'Public.',
+          'Nothing you add, in this beta. Public profiles, following and '
+              'posting come after the beta, and this policy will say so '
+              'before they do.',
+        ),
         (
           'Only you.',
           'Your wardrobe, Studio fits, saved and liked fits, and your style '

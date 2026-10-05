@@ -64,8 +64,9 @@ abstract interface class ReportRepository {
   Future<void> flush();
 }
 
-/// `POST /reports` (see docs/BACKEND_REQUESTS.md). Until the endpoint exists,
-/// or while offline, reports wait in [LocalStore] and go with the next one.
+/// `POST /reports` (Backend_app docs/API.md "Reports"). While Drip can't be
+/// reached (offline, a 5xx, or over the hourly limit), reports wait in
+/// [LocalStore] and go with the next one.
 class ApiReportRepository implements ReportRepository {
   ApiReportRepository(this._api, this._store);
   final ApiClient _api;
@@ -82,8 +83,7 @@ class ApiReportRepository implements ReportRepository {
       await _api.post('/reports', body);
       return ReportOutcome.sent;
     } on ApiException catch (e) {
-      // Not deployed yet (404), offline, or the server is down: keep it.
-      if (e.status == 404 || e.isNetwork || e.status >= 500) {
+      if (_retryLater(e)) {
         await _queue(body);
         return ReportOutcome.queued;
       }
@@ -100,7 +100,7 @@ class ApiReportRepository implements ReportRepository {
       try {
         await _api.post('/reports', jsonDecode(raw) as Map<String, dynamic>);
       } on ApiException catch (e) {
-        if (e.status == 404 || e.isNetwork || e.status >= 500) {
+        if (_retryLater(e)) {
           // Still can't send: keep this one and the rest for later.
           left.addAll(waiting.skip(i));
           break;
@@ -112,6 +112,11 @@ class ApiReportRepository implements ReportRepository {
     }
     await _store.setQueuedReports(left);
   }
+
+  /// Worth sending again later: offline, the server down, over the hourly
+  /// limit (429), or an older backend without /reports (404).
+  static bool _retryLater(ApiException e) =>
+      e.isNetwork || e.isRateLimited || e.status == 404 || e.status >= 500;
 
   Future<void> _queue(Map<String, dynamic> body) async {
     final next = [..._store.queuedReports, jsonEncode(body)];
