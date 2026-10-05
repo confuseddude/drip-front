@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../core/motion.dart';
 import '../core/tab_direction.dart';
 import '../core/widgets/bottom_nav.dart';
+import '../features/tour/tour.dart';
+import '../features/tour/tour_overlay.dart';
 
 export '../core/tab_direction.dart';
 
@@ -124,11 +126,16 @@ class MainShell extends StatelessWidget {
               left: 0,
               right: 0,
               bottom: 0,
-              child: DripBottomNav(
-                active: active,
-                onTab: (tab) => _goTab(context, tab, active),
+              child: TourAnchor(
+                id: 'nav',
+                child: DripBottomNav(
+                  active: active,
+                  onTab: (tab) => _goTab(context, tab, active),
+                ),
               ),
             ),
+          // The first-run tour, over everything (the nav included).
+          Positioned.fill(child: TourOverlay(path: path)),
         ],
       ),
     );

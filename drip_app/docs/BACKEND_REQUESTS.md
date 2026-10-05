@@ -3,7 +3,110 @@
 From the Flutter session, for the backend session. Newest first. Each request says what the app
 does today without it, so nothing is blocked.
 
-## 2026-10-05: shop the look (Scroll) and the Studio piece picker
+## 2026-10-06: usernames and display names, and where earlier requests stand
+
+### Status of earlier requests
+
+| Request | Status |
+|---|---|
+| 10-05 (later) #1 `POST /reports` | **Done and live.** The app keeps a report on the phone on 429, 5xx or offline, and resends it. |
+| 10-05 (later) #2 public profile photo on account deletion | **Closed.** The API has no public user content, and the app's photo handling is being reworked on the app side (no backend work). |
+| 10-05 #1 garment `id` on `Outfit.pieces` | **Done.** + WARDROBE and + STUDIO in the Scroll use it. |
+| 10-05 #2 `buyUrl` on `StudioPiece` | **Done.** VISIT shows for every catalogue piece in the Studio picker. |
+| 10-05 #3 saved pieces, #4 paging, #5 material | Still open, all low priority. |
+| 10-03 Studio canvas and occasion feeds | Done. |
+
+### 1. Username and display name (needed: the profile editor calls these today)
+
+**Why.** The profile editor (You → edit profile) lets users pick an @username and a display name.
+`PATCH /me` accepts only `onboardingPrefs`, `skinTone` and `styleTags`, so both edits fail with
+a 400 today, and `GET /me/username-available` is a 404.
+
+**What the app does today.** It shows the fields, checks the username rules on the phone, and
+shows the server's error when saving. Until this ships, people see their Google name.
+
+**Contract the app already sends and reads:**
+
+```
+PATCH /me { "username": "vighnesh.k" }
+  → 200, the same body as GET /me (the app reads `username` at the top level or `user.username`)
+  → 409 { error } when it's taken; 400 { error } when it breaks the rules
+
+PATCH /me { "displayName": "Vighnesh" }      // 1–40 chars after trimming
+PATCH /me { "displayName": null }            // clear it: back to the Google name
+  → 200, the same body as GET /me (`displayName` at the top level or `user.display_name`)
+
+GET /me/username-available?u=vighnesh.k
+  → 200 { "username": "vighnesh.k", "available": true }
+  → 200 { "username": "drip", "available": false, "reason": "That username is reserved" }
+
+GET /me  → also returns "username" and "displayName" (null until set)
+```
+
+**Username rules** (the app checks the same ones first, in `usernameProblem` in
+`lib/data/repositories/account_repository.dart`; please mirror them exactly):
+- `^[a-z0-9._]{3,24}$` (lower case: the app lower-cases what's typed)
+- at least one letter or number
+- reserved: `drip, admin, support, help, official, team, taylor, staff, me, settings, api`
+- unique, case-insensitively
+
+**Short v1.** Migration (schema change: founder approval): `users.username text null` with a
+unique index on `lower(username)` and a check constraint for the pattern; `users.display_name
+text null` with `char_length(trim(display_name)) between 1 and 40`. Extend the `PATCH /me` zod
+body with `username` and `displayName` (nullable), and map a unique violation to 409. Add
+`GET /me/username-available` (auth required, rate-limited like other reads; it may answer
+`available: false` with `reason` instead of 400 for a bad pattern).
+
+**Privacy.** The app's privacy policy says nothing a user adds is public in the beta. So keep
+both visible only to their owner (`GET /me`) until there are public profiles. When those ship,
+the app updates the policy first. `DELETE /me` already removes the row.
+
+---
+
+## 2026-10-05 (later): bug reports and the privacy policy (done)
+
+### 1. `POST /reports`: bug reports from the app (needed; one new table, founder approval)
+
+**Why.** The feed now has a **Report a bug** button (below Share). The user picks a kind, writes
+what happened, and can attach the fit on screen.
+
+**What the app does today.** It posts to `/reports`. On 404 (not deployed), a network error or a
+5xx, it keeps the report on the phone (up to 20) and sends the waiting ones with the next report.
+A 400 drops it rather than retrying forever.
+
+**Contract the app sends** (signed-in users only, `Authorization: Bearer`):
+
+```json
+POST /reports
+{ "kind": "broken | wrong_piece | image | slow | other",
+  "message": "The shoes link opens a hat",        // 3–1000 chars
+  "screen": "scroll",
+  "fitId": "uuid",                                // optional: the fit on screen
+  "appVersion": "1.0.0+1",
+  "platform": "android 14 …",                     // Platform.operatingSystem + version
+  "createdAt": "2026-10-05T15:20:00.000Z" }       // when the user sent it (may be earlier than receipt)
+→ 201 { "id": "uuid" }
+```
+
+**Short v1.** Migration `…_bug_reports.sql`: `bug_reports (id uuid pk, user_id uuid references
+users on delete cascade, kind text check in (…), message text check length 3–1000, screen text,
+fit_id uuid null, app_version text, platform text, reported_at timestamptz, created_at timestamptz
+default now(), status text default 'new')`. RLS: a user can insert their own and read none (admins
+read via the service role or an admin view). Zod-validate the body, rate-limit like other writes
+(for example 10 an hour), and capture a PostHog `bug_reported` event with `kind` only. No
+attachments in v1.
+
+**Privacy.** The app's policy says reports carry only the above (never photos) and are deleted
+with the account. The `on delete cascade` covers the second part.
+
+### 2. Account deletion must remove the public profile photo
+
+The app's new privacy policy says deleting the account removes everything, straight away.
+`DELETE /me` removes the private bucket's files. Please check it also removes the **public**
+profile photo (`/me/photo`, from the profile-editing work) and any copies in the CDN, and add it
+if not.
+
+## 2026-10-05: shop the look (Scroll) and the Studio piece picker (#1, #2 done)
 
 **Context.** Tapping a garment in a Scroll collage now opens a sheet with the fit's pieces. Each
 piece has BUY, **+ STUDIO** (puts it on the Studio canvas) and **+ WARDROBE**

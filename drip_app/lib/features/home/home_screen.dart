@@ -26,6 +26,7 @@ import '../social/social_controller.dart';
 import 'feed_controller.dart';
 import 'occasion_card.dart';
 import 'occasions.dart';
+import '../tour/tour.dart';
 
 /// Home: brand + inbox → stories → today (date, time, pick, Ask Taylor) →
 /// tools → today's drip (into the Scroll) → a staggered wall of fresh fits.
@@ -78,13 +79,16 @@ class _HomeHeader extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               // Like Instagram: + opens the camera (swiping right does too).
-              child: GlassIconButton(
-                semanticLabel: 'Open the camera',
-                onTap: openCamera(context),
-                child: const Icon(
-                  Icons.add_rounded,
-                  size: 24,
-                  color: AppColors.cream,
+              child: TourAnchor(
+                id: 'home.camera',
+                child: GlassIconButton(
+                  semanticLabel: 'Open the camera',
+                  onTap: openCamera(context),
+                  child: const Icon(
+                    Icons.add_rounded,
+                    size: 24,
+                    color: AppColors.cream,
+                  ),
                 ),
               ),
             ),
@@ -154,7 +158,7 @@ class _HomeBody extends ConsumerWidget {
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: _FeatureBlocks(),
+              child: TourAnchor(id: 'home.tools', child: _FeatureBlocks()),
             ),
           ),
           SliverToBoxAdapter(
@@ -166,26 +170,29 @@ class _HomeBody extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-              child: Row(
-                children: [
-                  Text('SHOP BY OCCASION', style: AppText.display(15)),
-                  const SizedBox(width: 8),
-                  Text(
-                    Occasions.all.length.toString().padLeft(2, '0'),
-                    style: AppText.mono(10, color: AppColors.dim),
-                  ),
-                  if (picked.isNotEmpty) ...[
-                    const Spacer(),
+              child: TourAnchor(
+                id: 'home.occasions',
+                child: Row(
+                  children: [
+                    Text('SHOP BY OCCASION', style: AppText.display(15)),
+                    const SizedBox(width: 8),
                     Text(
-                      'YOURS FIRST',
-                      style: AppText.mono(
-                        10,
-                        color: AppColors.cyan,
-                        letterSpacing: 1.5,
-                      ),
+                      Occasions.all.length.toString().padLeft(2, '0'),
+                      style: AppText.mono(10, color: AppColors.dim),
                     ),
+                    if (picked.isNotEmpty) ...[
+                      const Spacer(),
+                      Text(
+                        'YOURS FIRST',
+                        style: AppText.mono(
+                          10,
+                          color: AppColors.cyan,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

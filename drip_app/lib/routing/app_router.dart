@@ -26,6 +26,7 @@ import '../features/search/search_results_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/session/session_controller.dart';
 import '../features/admin/review_screen.dart';
+import '../features/settings/privacy_policy_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/settings/theme_picker_screen.dart';
 import '../features/social/followers_screen.dart';
@@ -290,6 +291,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           _page('/following', (_) => const FollowingScreen()),
           _page('/activity', (_) => const ActivityScreen()),
           _page('/settings', (_) => const SettingsScreen()),
+          _page('/privacy', (_) => const PrivacyPolicyScreen()),
           _page('/admin/review', (_) => const ReviewScreen()),
           _page('/photoshoot', (_) => const PhotoshootScreen()),
           _page('/photoshoot/result', (_) => const PhotoshootResultScreen()),
