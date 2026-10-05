@@ -26,6 +26,7 @@ import '../home/occasions.dart';
 import '../outfits/fit_actions.dart';
 import '../outfits/outfit_controller.dart';
 import '../outfits/shop_sheet.dart';
+import '../report/report_bug_sheet.dart';
 import 'fit_pieces_sheet.dart';
 import 'shop_the_look.dart';
 
@@ -1106,6 +1107,12 @@ class _ActionRail extends ConsumerWidget {
           icon: Icons.ios_share_rounded,
           semantic: 'Share',
           onTap: () => showAfterBeta(context, 'Sharing'),
+        ),
+        _RailButton(
+          icon: Icons.bug_report_outlined,
+          semantic: 'Report a bug',
+          onTap: () =>
+              showReportBug(context, screen: 'scroll', fitId: outfit.id),
         ),
       ],
     );

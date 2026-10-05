@@ -3,6 +3,49 @@
 From the Flutter session, for the backend session. Newest first. Each request says what the app
 does today without it, so nothing is blocked.
 
+## 2026-10-05 (later): bug reports and the privacy policy
+
+### 1. `POST /reports`: bug reports from the app (needed; one new table, founder approval)
+
+**Why.** The feed now has a **Report a bug** button (below Share). The user picks a kind, writes
+what happened, and can attach the fit on screen.
+
+**What the app does today.** It posts to `/reports`. On 404 (not deployed), a network error or a
+5xx, it keeps the report on the phone (up to 20) and sends the waiting ones with the next report.
+A 400 drops it rather than retrying forever.
+
+**Contract the app sends** (signed-in users only, `Authorization: Bearer`):
+
+```json
+POST /reports
+{ "kind": "broken | wrong_piece | image | slow | other",
+  "message": "The shoes link opens a hat",        // 3–1000 chars
+  "screen": "scroll",
+  "fitId": "uuid",                                // optional: the fit on screen
+  "appVersion": "1.0.0+1",
+  "platform": "android 14 …",                     // Platform.operatingSystem + version
+  "createdAt": "2026-10-05T15:20:00.000Z" }       // when the user sent it (may be earlier than receipt)
+→ 201 { "id": "uuid" }
+```
+
+**Short v1.** Migration `…_bug_reports.sql`: `bug_reports (id uuid pk, user_id uuid references
+users on delete cascade, kind text check in (…), message text check length 3–1000, screen text,
+fit_id uuid null, app_version text, platform text, reported_at timestamptz, created_at timestamptz
+default now(), status text default 'new')`. RLS: a user can insert their own and read none (admins
+read via the service role or an admin view). Zod-validate the body, rate-limit like other writes
+(for example 10 an hour), and capture a PostHog `bug_reported` event with `kind` only. No
+attachments in v1.
+
+**Privacy.** The app's policy says reports carry only the above (never photos) and are deleted
+with the account. The `on delete cascade` covers the second part.
+
+### 2. Account deletion must remove the public profile photo
+
+The app's new privacy policy says deleting the account removes everything, straight away.
+`DELETE /me` removes the private bucket's files. Please check it also removes the **public**
+profile photo (`/me/photo`, from the profile-editing work) and any copies in the CDN, and add it
+if not.
+
 ## 2026-10-05: shop the look (Scroll) and the Studio piece picker
 
 **Context.** Tapping a garment in a Scroll collage now opens a sheet with the fit's pieces. Each

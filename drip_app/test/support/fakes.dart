@@ -7,6 +7,7 @@ import 'package:drip/data/repositories/colour_repository.dart';
 import 'package:drip/data/repositories/discovery_repository.dart';
 import 'package:drip/data/repositories/feed_repository.dart';
 import 'package:drip/data/repositories/outfit_repository.dart';
+import 'package:drip/data/repositories/report_repository.dart';
 import 'package:drip/data/repositories/studio_repository.dart';
 import 'package:drip/data/repositories/stylist_repository.dart';
 import 'package:drip/data/repositories/wardrobe_repository.dart';
@@ -77,6 +78,7 @@ List<Override> testOverrides(
   FeedRepository? feed,
   OutfitRepository? outfits,
   DiscoveryRepository? discovery,
+  ReportRepository? reports,
 }) => [
   sharedPreferencesProvider.overrideWithValue(prefs),
   authRepositoryProvider.overrideWithValue(
@@ -91,6 +93,9 @@ List<Override> testOverrides(
   ),
   wardrobeRepositoryProvider.overrideWith((_) => MockWardrobeRepository()),
   studioRepositoryProvider.overrideWith((_) => MockStudioRepository()),
+  reportRepositoryProvider.overrideWith(
+    (_) => reports ?? MockReportRepository(),
+  ),
   stylistRepositoryProvider.overrideWith((_) => MockStylistRepository()),
   colourRepositoryProvider.overrideWith((_) => MockColourRepository()),
   discoveryRepositoryProvider.overrideWith(

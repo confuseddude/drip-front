@@ -358,26 +358,9 @@ class SettingsScreen extends ConsumerWidget {
                       },
                     ),
                     row(
-                      'Privacy & Terms',
+                      'Privacy Policy',
                       last: true,
-                      onTap: () {
-                        showDripSheet<void>(
-                          context,
-                          builder: (_) => SheetContent(
-                            title: 'PRIVACY & TERMS',
-                            children: [
-                              Text(
-                                'Your saved fits, wardrobe photos, studio fits and Gen renders live on your Drip account, and wardrobe photos and renders are private to you. Your selfie never leaves this phone. Your profile photo, name and username are what others see. You can delete your account, and everything in it, at any time from this screen.',
-                                style: AppText.manrope(
-                                  13,
-                                  color: AppColors.muted,
-                                  lineHeight: 19,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      onTap: () => context.push('/privacy'),
                     ),
                   ],
                 ),
