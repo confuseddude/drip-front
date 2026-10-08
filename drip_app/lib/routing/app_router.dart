@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/quiz/style_quiz.dart';
 import '../features/activity/activity_screen.dart';
 import '../features/auth/sign_in_screen.dart';
 import '../features/create/create_ootd_screen.dart';
@@ -216,6 +217,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         (s) => OotdViewerScreen(ootdId: s.pathParameters['id']!),
       ),
       _page('/selfie', (_) => const SelfieScreen()),
+      _page('/quiz', (_) => const StyleQuizScreen()),
       _page('/selfies', (_) => const SelfieGalleryScreen()),
       _page('/themes', (_) => const ThemePickerScreen(), fade: true),
       _page('/stylist', (_) => const TaylorScreen()),

@@ -117,7 +117,6 @@ const tourAfterBeta = [
   ('mail', 'Messages & notifications'),
   ('camera', 'AI photoshoots of your fits'),
   ('palette', 'Automatic colour analysis'),
-  ('quiz', 'The style quiz'),
   ('lock', 'Private accounts & controls'),
 ];
 
@@ -155,8 +154,8 @@ const tourSteps = [
     gesture: TourGesture.tap,
     title: 'YOUR TOOLS',
     body:
-        'A guided selfie, your colour palette and your shop list. The style '
-        'quiz arrives after the beta.',
+        'A guided selfie, your colour palette, your shop list, and a '
+        'ten-tap style quiz that sharpens what the feed picks for you.',
   ),
   TourStep(
     route: '/home',

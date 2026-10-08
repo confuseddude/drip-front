@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../quiz/style_quiz.dart';
 import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -680,6 +681,8 @@ class _Portrait extends StatelessWidget {
 // ─────────────────────────────────────────────────────────── feature blocks
 
 class _Feature {
+  // Every tool is live today; `soon` stays for the next one that isn't.
+  // ignore: unused_element_parameter
   const _Feature(this.index, this.icon, this.label, {this.soon = false});
   final String index;
   final IconData icon;
@@ -693,7 +696,7 @@ const _features = [
   _Feature('01', Icons.face_retouching_natural_rounded, 'Selfie Coordinator'),
   _Feature('02', Icons.palette_outlined, 'Colour Theory'),
   _Feature('03', Icons.shopping_bag_outlined, 'Shop List'),
-  _Feature('04', Icons.quiz_outlined, 'Style Quiz', soon: true),
+  _Feature('04', Icons.quiz_outlined, 'Style Quiz'),
 ];
 
 /// Four tools, 2×2, numbered like the index of a lookbook.
@@ -712,12 +715,15 @@ class _FeatureBlocks extends ConsumerWidget {
         context.push('/me/colour-theory');
       case '03':
         showBagSheet(context);
+      case '04':
+        context.push('/quiz');
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inBag = ref.watch(bagProvider).length;
+    final quizDone = ref.watch(quizAnswersProvider).isNotEmpty;
     Widget tile(_Feature f) => Expanded(
       child: _FeatureTile(
         feature: f,
@@ -725,6 +731,8 @@ class _FeatureBlocks extends ConsumerWidget {
             ? 'AFTER BETA'
             : f.index == '03'
             ? (inBag == 0 ? 'EMPTY' : '$inBag IN BAG')
+            : f.index == '04'
+            ? (quizDone ? 'RETAKE' : '10 QUICK TAPS')
             : f.index == '01'
             ? 'GUIDED SELFIE'
             : 'YOUR PALETTE',

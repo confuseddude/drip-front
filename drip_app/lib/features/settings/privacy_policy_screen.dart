@@ -130,7 +130,7 @@ class PolicySection {
 
 /// The policy's words, apart from the screen so they're easy to review.
 abstract final class PrivacyPolicy {
-  static const updated = '5 OCTOBER 2026';
+  static const updated = '9 OCTOBER 2026';
 
   static const intro =
       'This explains what Drip collects, why, who helps us run it, what '
@@ -157,8 +157,10 @@ abstract final class PrivacyPolicy {
           'Your style.',
           'What you pick when you set up Drip or edit Your style: who you '
               'dress for, occasions, vibes, colours and colour season, '
-              'brands, budget, fit, and skin tone if you set it. We use them '
-              'to choose the fits you see.',
+              'brands, budget, fit, and skin tone if you set it, plus your '
+              'answers to the style quiz if you take it (outfit budget, what '
+              'you dress for, how and where you shop, your weather). We use '
+              'them to choose the fits you see.',
         ),
         (
           'Your wardrobe.',
