@@ -87,9 +87,11 @@ class LocalStore {
     await _prefs.remove('studio.extras.$fitId');
   }
 
-  /// The first-run tour was finished or skipped.
-  bool get tourSeen => _prefs.getBool('tour.seen') ?? false;
-  Future<void> setTourSeen(bool v) => _prefs.setBool('tour.seen', v);
+  /// Ids of the just-in-time tips already shown (`hints`).
+  Set<String> get hintsSeen =>
+      _prefs.getStringList('hints.seen')?.toSet() ?? const {};
+  Future<void> setHintsSeen(Set<String> v) =>
+      _prefs.setStringList('hints.seen', v.toList());
 
   /// Bug reports that couldn't be sent yet (JSON each), oldest first.
   List<String> get queuedReports =>

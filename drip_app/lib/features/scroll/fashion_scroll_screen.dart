@@ -30,7 +30,7 @@ import '../report/report_bug_sheet.dart';
 import 'fit_pieces_sheet.dart';
 import 'reel_physics.dart';
 import 'shop_the_look.dart';
-import '../tour/tour.dart';
+import '../hints/hints.dart';
 
 /// The Fashion Scroll: full-screen, one fit at a time, snapping vertically.
 ///
@@ -554,7 +554,7 @@ class _ReelPageState extends ConsumerState<_ReelPage> {
                 children: [
                   SizedBox(height: top),
                   Expanded(
-                    child: TourAnchor(
+                    child: HintAnchor(
                       id: 'scroll.stage',
                       child: _Stage(
                         outfit: outfit,
@@ -638,7 +638,7 @@ class _Stage extends StatelessWidget {
                   child: AnimatedOpacity(
                     opacity: expanded ? 0 : 1,
                     duration: Motion.dur(context, Motion.quick),
-                    child: TourAnchor(
+                    child: HintAnchor(
                       id: 'scroll.rail',
                       child: _ActionRail(outfit: outfit),
                     ),

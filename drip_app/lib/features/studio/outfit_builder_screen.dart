@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../hints/hints.dart';
 import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -174,27 +175,30 @@ class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: Center(
-              child: FitCanvas(
-                worn: studio.worn,
-                placed: studio.placed,
-                stack: studio.stack,
-                selected: selected,
-                onSlotTap: _tapPiece,
-                onAdd: _openPicker,
-                onBackgroundTap: selected == null
-                    ? null
-                    : () => setState(() => _selected = null),
-                onMoveStart: (key) {
-                  c.beginMove(key);
-                  if (_selected != key) setState(() => _selected = key);
-                },
-                onMove: c.move,
-                onSwap: (key) => _openPicker(baseCategory(key), swapKey: key),
-                onRemove: (key) {
-                  Haptics.commit();
-                  setState(() => _selected = null);
-                  c.remove(key);
-                },
+              child: HintAnchor(
+                id: 'studio.canvas',
+                child: FitCanvas(
+                  worn: studio.worn,
+                  placed: studio.placed,
+                  stack: studio.stack,
+                  selected: selected,
+                  onSlotTap: _tapPiece,
+                  onAdd: _openPicker,
+                  onBackgroundTap: selected == null
+                      ? null
+                      : () => setState(() => _selected = null),
+                  onMoveStart: (key) {
+                    c.beginMove(key);
+                    if (_selected != key) setState(() => _selected = key);
+                  },
+                  onMove: c.move,
+                  onSwap: (key) => _openPicker(baseCategory(key), swapKey: key),
+                  onRemove: (key) {
+                    Haptics.commit();
+                    setState(() => _selected = null);
+                    c.remove(key);
+                  },
+                ),
               ),
             ),
           ),

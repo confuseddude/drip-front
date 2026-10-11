@@ -24,7 +24,7 @@ import '../session/session_controller.dart';
 import '../social/social_controller.dart';
 import '../onboarding/onboarding_data.dart';
 import 'settings_controller.dart';
-import '../tour/tour.dart';
+import '../hints/hints.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -359,8 +359,16 @@ class SettingsScreen extends ConsumerWidget {
                       },
                     ),
                     row(
-                      'Take the Tour',
-                      onTap: () => ref.read(tourProvider.notifier).start(),
+                      'Show Tips Again',
+                      onTap: () async {
+                        await ref.read(hintsProvider.notifier).reset();
+                        if (context.mounted) {
+                          showDripToast(
+                            context,
+                            'Tips will pop up again as you explore',
+                          );
+                        }
+                      },
                     ),
                     row(
                       'Privacy Policy',

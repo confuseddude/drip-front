@@ -13,7 +13,7 @@ import '../../core/widgets/top_bar.dart';
 import '../../data/models/wardrobe.dart';
 import '../../routing/main_shell.dart';
 import 'wardrobe_controller.dart';
-import '../tour/tour.dart';
+import '../hints/hints.dart';
 
 /// Groups garments the way the wardrobe grid labels them. Uploads still
 /// being processed (or that failed) sit together at the top.
@@ -325,7 +325,7 @@ class _UploadTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TourAnchor(
+    return HintAnchor(
       id: 'wardrobe.add',
       child: Tap(
         onTap: () => context.push('/wardrobe/capture'),

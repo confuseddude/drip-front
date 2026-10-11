@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../core/motion.dart';
 import '../core/tab_direction.dart';
 import '../core/widgets/bottom_nav.dart';
-import '../features/tour/tour.dart';
-import '../features/tour/tour_overlay.dart';
+import '../features/hints/hints.dart';
+import '../features/hints/hint_overlay.dart';
 
 export '../core/tab_direction.dart';
 
@@ -127,7 +127,7 @@ class MainShell extends StatelessWidget {
               left: 0,
               right: 0,
               bottom: 0,
-              child: TourAnchor(
+              child: HintAnchor(
                 id: 'nav',
                 child: DripBottomNav(
                   active: active,
@@ -135,8 +135,8 @@ class MainShell extends StatelessWidget {
                 ),
               ),
             ),
-          // The first-run tour, over everything (the nav included).
-          Positioned.fill(child: TourOverlay(path: path)),
+          // Just-in-time tips, over everything (the nav included).
+          Positioned.fill(child: HintOverlay(path: path)),
         ],
       ),
     );

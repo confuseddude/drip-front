@@ -19,7 +19,7 @@ import '../photoshoot/photoshoot_controller.dart';
 import '../social/social_controller.dart';
 import 'profile_edit.dart';
 import 'profile_widgets.dart';
-import '../tour/tour.dart';
+import '../hints/hints.dart';
 
 class MyProfileScreen extends ConsumerStatefulWidget {
   const MyProfileScreen({super.key});
@@ -202,7 +202,7 @@ class _Body extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: TourAnchor(
+          child: HintAnchor(
             id: 'me.style',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

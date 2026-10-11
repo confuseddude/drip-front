@@ -12,7 +12,7 @@ import 'package:drip/data/repositories/studio_repository.dart';
 import 'package:drip/data/repositories/stylist_repository.dart';
 import 'package:drip/data/repositories/wardrobe_repository.dart';
 import 'package:drip/features/onboarding/local_selfie.dart';
-import 'package:drip/features/tour/tour.dart';
+import 'package:drip/features/hints/hints.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,11 +80,11 @@ List<Override> testOverrides(
   OutfitRepository? outfits,
   DiscoveryRepository? discovery,
   ReportRepository? reports,
-  bool tourAutoStart = false,
+  bool hints = false,
 }) => [
   sharedPreferencesProvider.overrideWithValue(prefs),
-  // The first-run tour would cover every screen; tests start it by hand.
-  tourAutoStartProvider.overrideWithValue(tourAutoStart),
+  // Tips would pop over screens under test; hint tests turn them on.
+  hintsEnabledProvider.overrideWithValue(hints),
   authRepositoryProvider.overrideWithValue(
     auth ?? FakeAuthRepository(signedIn: signedIn),
   ),

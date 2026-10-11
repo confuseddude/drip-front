@@ -27,7 +27,7 @@ import '../social/social_controller.dart';
 import 'feed_controller.dart';
 import 'occasion_card.dart';
 import 'occasions.dart';
-import '../tour/tour.dart';
+import '../hints/hints.dart';
 
 /// Home: brand + inbox → stories → today (date, time, pick, Ask Taylor) →
 /// tools → today's drip (into the Scroll) → a staggered wall of fresh fits.
@@ -80,7 +80,7 @@ class _HomeHeader extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               // Like Instagram: + opens the camera (swiping right does too).
-              child: TourAnchor(
+              child: HintAnchor(
                 id: 'home.camera',
                 child: GlassIconButton(
                   semanticLabel: 'Open the camera',
@@ -159,7 +159,7 @@ class _HomeBody extends ConsumerWidget {
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: TourAnchor(id: 'home.tools', child: _FeatureBlocks()),
+              child: HintAnchor(id: 'home.tools', child: _FeatureBlocks()),
             ),
           ),
           SliverToBoxAdapter(
@@ -171,7 +171,7 @@ class _HomeBody extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-              child: TourAnchor(
+              child: HintAnchor(
                 id: 'home.occasions',
                 child: Row(
                   children: [
