@@ -138,10 +138,12 @@ const hints = [
     text: 'Tap a + to add pieces. Tap a piece to resize, swap or remove it.',
   ),
   Hint(
-    'wardrobe.add',
+    'wardrobe.import',
     route: '/wardrobe',
-    anchor: 'wardrobe.add',
-    text: 'Add photos of what you own. They show up in the Studio and with Taylor.',
+    anchor: 'wardrobe.import',
+    text:
+        'Tap + and pick photos of your outfits. Drip cuts out every piece '
+        'and builds your wardrobe.',
   ),
   Hint(
     'me.style',

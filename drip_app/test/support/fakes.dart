@@ -10,7 +10,9 @@ import 'package:drip/data/repositories/outfit_repository.dart';
 import 'package:drip/data/repositories/report_repository.dart';
 import 'package:drip/data/repositories/studio_repository.dart';
 import 'package:drip/data/repositories/stylist_repository.dart';
+import 'package:drip/data/repositories/wardrobe_import_repository.dart';
 import 'package:drip/data/repositories/wardrobe_repository.dart';
+import 'package:drip/core/platform/notifications.dart';
 import 'package:drip/features/onboarding/local_selfie.dart';
 import 'package:drip/features/hints/hints.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -96,6 +98,10 @@ List<Override> testOverrides(
     (_) => outfits ?? MockOutfitRepository(),
   ),
   wardrobeRepositoryProvider.overrideWith((_) => MockWardrobeRepository()),
+  wardrobeImportRepositoryProvider.overrideWith(
+    (_) => MockWardrobeImportRepository(),
+  ),
+  notificationsProvider.overrideWithValue(const NoNotifications()),
   studioRepositoryProvider.overrideWith((_) => MockStudioRepository()),
   reportRepositoryProvider.overrideWith(
     (_) => reports ?? MockReportRepository(),

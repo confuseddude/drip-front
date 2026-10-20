@@ -19,6 +19,7 @@ import 'repositories/report_repository.dart';
 import 'repositories/social_repository.dart';
 import 'repositories/studio_repository.dart';
 import 'repositories/stylist_repository.dart';
+import 'repositories/wardrobe_import_repository.dart';
 import 'repositories/wardrobe_repository.dart';
 
 /// Overridden in `main()` once [SharedPreferences] has been loaded.
@@ -83,6 +84,11 @@ final wardrobeRepositoryProvider = Provider<WardrobeRepository>(
     ref.watch(apiClientProvider),
     ref.watch(localStoreProvider),
   ),
+);
+
+/// Gallery import (many photos → sorted pieces).
+final wardrobeImportRepositoryProvider = Provider<WardrobeImportRepository>(
+  (ref) => ApiWardrobeImportRepository(ref.watch(apiClientProvider)),
 );
 
 final stylistRepositoryProvider = Provider<StylistRepository>(

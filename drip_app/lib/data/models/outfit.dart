@@ -148,6 +148,7 @@ class OutfitPiece {
     this.buyUrl,
     this.id,
     this.subcategory,
+    this.owned = false,
   });
 
   /// TOP / BOTTOM / SHOES… (upper-case for display).
@@ -167,6 +168,10 @@ class OutfitPiece {
   /// What it is, finer than [slot]: "jeans", "sneakers", "bag".
   final String? subcategory;
 
+  /// The user already owns this piece or one very like it (matched against
+  /// their wardrobe by the server). False until the API sends it.
+  final bool owned;
+
   factory OutfitPiece.fromJson(Map<String, dynamic> json) {
     final category = (json['category'] as String? ?? '').toUpperCase();
     return OutfitPiece(
@@ -178,6 +183,7 @@ class OutfitPiece {
       buyUrl: json['buyUrl'] as String?,
       id: (json['garmentId'] ?? json['id']) as String?,
       subcategory: json['subcategory'] as String?,
+      owned: json['owned'] as bool? ?? false,
     );
   }
 }

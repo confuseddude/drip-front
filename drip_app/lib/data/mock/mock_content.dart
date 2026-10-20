@@ -538,6 +538,15 @@ abstract final class MockContent {
       colorway: 'Washed Grey',
       price: 120,
       tags: const ['VINTAGE', 'COTTON', 'Y2K'],
+      origin: 'import',
+      wearCount: 4,
+      lastWornAt: DateTime(2026, 2, 14),
+      wornOn: [
+        DateTime(2026, 2, 14),
+        DateTime(2025, 12, 31),
+        DateTime(2025, 11, 2),
+        DateTime(2025, 9, 20),
+      ],
     ),
     WardrobeItem(
       id: 'w_boots',

@@ -3,6 +3,225 @@
 From the Flutter session, for the backend session. Newest first. Each request says what the app
 does today without it, so nothing is blocked.
 
+## 2026-10-21: build the wardrobe from the user's gallery photos (big; founder-approved)
+
+The founder wants Wardrobe to work like Google Photos' Wardrobe. The user shares outfit photos and
+gets back a sorted wardrobe of clean cut-outs of what they already own. The design doc the founder
+reviewed is at https://claude.ai/code/artifact/737ac4aa-2baf-49e0-b431-bb4bd9ac0e77. **The founder's
+decisions:**
+
+- **The system photo picker, never gallery access.** The app uses Android's Photo Picker (and the
+  iOS picker), so there's no `READ_MEDIA_IMAGES` and no Play declaration.
+- **At most 50 photos per import.** The user picks as many as they like within that.
+- **One person per photo in this version.** Group photos are "coming in the next update". The app
+  sets them aside before upload; the server should skip any that get through.
+- **No review screen.** Pieces go straight into the wardrobe. A bad cut-out is reported from its
+  page (#5). So **duplicates must be folded on the server**: a tee seen in 9 photos is one piece.
+- **Wear history from photo dates.** Each photo's day counts as a day the piece was worn.
+- **A push notification when it's done**, so the user can leave the app (#4).
+- **Cut-outs as clean as possible.** Generated "clean product shots" are not for now.
+- **Run it locally for prototyping** (on the founder's laptop) before deciding between a separate
+  worker and a GPU host (#2, "Running it locally").
+
+### What the app does today (branch `feat/wardrobe-import`)
+
+1. **Welcome screen** (`/wardrobe/import`): "Welcome to your wardrobe" and what works best (just
+   you, mirror selfies or full-body shots, good light, fits you love). The privacy line promises
+   what's in "Privacy promises" below.
+2. **Pick**, up to 50 photos. The picker resizes them to 1600 px on the long edge (JPEG, quality
+   88) and keeps the EXIF date.
+3. **On-phone checks (ML Kit)**, with nothing uploaded yet. The phone sets aside:
+   - photos with 2 or more faces (a group);
+   - photos with no face and no body (no one in them);
+   - photos that are too dark;
+   - near-identical repeats (burst shots).
+
+   It reads each photo's EXIF date.
+4. **Upload.** `POST /wardrobe/imports`, then a PUT of each photo to its slot, 3 at a time. Photos
+   are confirmed in batches of 10 with `POST …/photos`, and the last batch says `last: true`. A
+   photo that fails twice is left out.
+5. **Follow.** The app polls `GET /wardrobe/imports/:id` every 4 s in the app and every 15 s
+   while the user is in another app. An Android foreground service keeps that alive and shows an
+   ongoing "Building your wardrobe" progress notification.
+6. **Done.** The app shows a "Your wardrobe is ready" notification (or a toast in the app), and a
+   banner on Wardrobe reports "23 new pieces, 6 repeats folded together". Then it refetches
+   `GET /wardrobe/items`.
+7. **Resume.** The app stores the import id. On the next launch it calls `GET
+   /wardrobe/imports/:id`, or `GET /wardrobe/imports?active=true` if it has no id.
+
+**Until the endpoints exist**, a 404 on `POST /wardrobe/imports` shows "Switching this on: try again
+soon". Debug builds can also preview the remaining steps against a stand-in server.
+
+### 1. The gallery import API (needed)
+
+| Method | Path | Body → response |
+|---|---|---|
+| POST | `/wardrobe/imports` | `{ count }` (1–50) → `201 { id, uploads: [{ uploadUrl, path }] }`, one slot per photo. 400 for a bad count, 409 if the user already has a `processing` import, 429 over **3 imports a day**. Slots aren't tied to a content type: the app sends `image/jpeg` (or `image/png`/`image/webp`), so sniff the real type with sharp. |
+| POST | `/wardrobe/imports/:id/photos` | `{ photos: [{ path, takenOn? }], last: bool }` → `202 { photosTotal }`. Called several times (batches of about 10). `takenOn` is `YYYY-MM-DD` (EXIF has no time zone, so only the day is sent). Paths must be this import's slots; a path confirmed twice is ignored. On `last: true`, `photosTotal` becomes the number confirmed, and the slots never confirmed are deleted. 404 if not yours. |
+| GET | `/wardrobe/imports/:id` | → `WardrobeImport`. 404 if not yours. |
+| GET | `/wardrobe/imports?active=true` | → `{ imports: WardrobeImport[] }`, the user's `processing` imports, newest first (in practice 0 or 1). |
+| DELETE | `/wardrobe/imports/:id` | → 204. Stops its jobs and deletes its photos and crops. Pieces already created stay. |
+
+`WardrobeImport` = `{ id, status: processing|done|failed|cancelled, stage: photos|grouping,
+photosTotal, photosDone, photosSkipped, piecesAdded, duplicatesMerged, alreadyOwned, createdAt }`.
+- `photosDone` counts photos finished, including skipped ones, so the bar reaches the end.
+- `stage: grouping` is the last step, after every photo is done.
+- `photosSkipped` counts photos with no one in them, groups and unreadable photos.
+- `duplicatesMerged` counts cut-outs folded into another piece from the same import.
+- `alreadyOwned` counts pieces matched to something already in the wardrobe (#3).
+
+**Storage.** Use the private bucket, under `wardrobe-imports/<user>/<import>/…`, with paths derived
+from ids, so a retry overwrites rather than duplicates (as `runWardrobeItem` does today).
+
+**Tables** (one migration, owner-only RLS like `wardrobe_items`):
+- `wardrobe_imports(id, user_id, status, stage, photos_total, photos_done, photos_skipped,
+  pieces_added, duplicates_merged, already_owned, last_received, created_at, finished_at)`.
+- `wardrobe_import_photos(id, import_id, path, taken_on, status queued|done|skipped|failed,
+  skip_reason)`.
+- `wardrobe_detections(id, photo_id, slot, crop_path, bbox, quality, embedding vector(512),
+  colour lab[])`. Needs `pgvector`.
+- `wardrobe_items` gains `origin = 'import'`, `import_id`, and `embedding vector(512)` (for #3
+  and #6).
+
+### 2. The pipeline: photo → clean pieces, repeats folded (needed)
+
+Three Inngest functions, like `wardrobe-process`.
+
+**`wardrobe-import/photo`** runs once per confirmed photo, with low concurrency (2) because of RAM.
+1. Download the photo, fix its rotation, and keep the full 1600 px for the crops. Run
+   `segformer_b2_clothes` at 1024, as `segmentClothes` does.
+2. **Skip** the photo (counted in `photosSkipped`, with a `skip_reason`) when:
+   - the person region is tiny or missing;
+   - it splits into **two or more large, separate person blobs** (a group).
+3. **One region per piece**, using the parser's ATR labels:
+   - `Upper-clothes` → top or outer. The parser can't tell them apart, so the tagger decides.
+   - `Pants`, `Skirt` → bottom.
+   - `Dress` → dress.
+   - `Left-shoe` + `Right-shoe` → **one** shoes piece (their union).
+   - `Bag`, `Belt`, `Scarf`, `Hat`, `Sunglasses` → accessory.
+   - Ignore face, hair, skin, arms, legs and background.
+
+   Drop regions under about 1.5 % of the person's area.
+4. **Make the cut-out as clean as possible.** This is the founder's priority, and the steps are
+   cheap:
+   - Scale the mask up to 1600 px with a smooth resize, not nearest-neighbour.
+   - Close small holes (where a strap or hair crosses the garment).
+   - Subtract the arm, hand and face labels, so skin over a sleeve doesn't stay in.
+   - Keep the largest connected part.
+   - Feather the edge by 1–2 px, and zero the hidden RGB as `birefnet.ts` already does.
+   - Frame it on the same transparent square as catalogue cut-outs, so wardrobe pieces look
+     consistent in Studio.
+   - Worth testing: run BiRefNet **on the crop only** (small, so cheap) and intersect it with the
+     parser mask for sharper edges. Keep it only if it visibly helps on real photos.
+5. **Score each crop**, so the best one represents the piece later. Higher is larger. It drops when
+   the crop touches the photo edge (cut off) or a lot of it is hidden by an arm or a bag.
+6. **Embed each crop** with a CLIP or SigLIP image model through `@huggingface/transformers` (for
+   example `Xenova/clip-vit-base-patch32`, 512-d). Also store a small LAB colour histogram, so two
+   tees of the same cut but different colours aren't folded together.
+7. Mark the photo done and add 1 to `photos_done`. When every photo is done and `last` has
+   arrived, send `wardrobe-import/group`.
+
+**`wardrobe-import/group`** runs once per import (`stage = grouping`).
+1. **Fold repeats.** Within each slot, cluster the import's crops by cosine similarity (start
+   around 0.88) **and** close colour. Tune both on the founder's real photos.
+2. Each cluster becomes one piece. Its cut-out is the cluster's best-scoring crop, and its dates are
+   every `taken_on` in the cluster.
+3. **Already owned?** Compare each cluster with the user's existing `wardrobe_items` in the same
+   slot. On a match, don't create a piece: add the dates to that item's wear history (#3) and count
+   it in `alreadyOwned`.
+4. Otherwise create a `wardrobe_items` row: `origin 'import'`, `status 'ready'`, the cut-out, and
+   the embedding. Tag it with the existing tagger **once per piece**, not once per crop.
+5. Write the wear history (#3). Set `status = done`, the counts and `finished_at`. Then send the
+   push (#4).
+6. On an unrecoverable error, set `status = failed` and still send a push saying it stopped.
+
+**`wardrobe-import/cleanup`** runs every hour.
+- Delete the originals and leftover crops **24 hours after `finished_at`** (the privacy policy
+  promises this).
+- Delete slots never confirmed.
+- An import with no `last` after 2 hours, or stuck in `processing` for 6 hours, becomes `failed`,
+  and its files are cleaned up.
+
+**Running it locally (founder's call for prototyping).** The models already run on the CPU or
+DirectML (`onnx-device.ts`), so the founder's Windows laptop can do the work:
+1. `npm run dev` (port 3001) and `npx inngest-cli@latest dev -u
+   http://localhost:3001/api/inngest`, as in the README.
+2. The phone reaches the laptop through `adb reverse tcp:3001 tcp:3001`.
+3. The app runs with `flutter run --dart-define-from-file=config/local.json` (on the app branch;
+   `API_BASE_URL=http://localhost:3001`). Debug builds allow plain HTTP to `localhost` for this.
+
+Whether the local API points at the hosted Supabase project (simplest: the same sign-in and data)
+or at a local stack is your call. Please add the steps to the README. A separate worker or a GPU
+host is a later conversation with the founder, once real timings exist. **Please record the time
+per photo and per import on the laptop.**
+
+### 3. Wear history on `WardrobeItem` (needed; the app reads it today)
+
+Add to `WardrobeItem`:
+- **`wearCount`**: the number of days.
+- **`lastWornOn`**: `YYYY-MM-DD`, or null.
+- **`wornOn`**: `YYYY-MM-DD[]`, newest first, at most 30.
+
+Count them from the worn calendar: the import writes one `worn_log` row per photo day
+(`isPlanned: false`, the item ids from that photo), so the calendar shows them too. Add a `source`
+column (`photo|manual`) if you want to tell them apart. The app shows:
+- "WORN 4× · 14 FEB" on the cards;
+- a Most worn / Least worn sort;
+- a "Not worn lately" shelf (last worn over 180 days ago);
+- a Wear history card on the item page.
+
+Items without these fields just don't show them. Also return **`origin: 'import'`** for these
+items (the app labels them "From your photos").
+
+### 4. Push notifications (needed for "it's ready" after the app is closed)
+
+The app's local notifications only work while its process is alive. The foreground service covers
+switching apps, but not swiping Drip away. For that we need Firebase Cloud Messaging:
+
+1. **Founder (manual).** Create a Firebase project. Add the Android app `com.drip.drip` and download
+   `google-services.json` for the app. Create a service account with the "Firebase Cloud Messaging
+   API" role for the backend.
+2. **Backend.**
+   - Add `POST /me/push-tokens { token, platform: android|ios }` (an upsert) and `DELETE
+     /me/push-tokens/:token`, backed by a table `push_tokens(user_id, token, platform,
+     updated_at)`.
+   - When an import ends, send an FCM HTTP v1 message to the user's tokens: `notification: { title:
+     "Your wardrobe is ready", body: "23 new pieces are in your wardrobe." }`, `data: { route:
+     "wardrobe", importId }`.
+   - Delete tokens FCM reports as `UNREGISTERED`.
+   - Account deletion removes the user's tokens.
+3. **App.** Once `google-services.json` exists, I'll add `firebase_messaging`, register the token
+   after sign-in and route taps to `/wardrobe`. The local notifications stay for the in-app case.
+
+### 5. Reports can carry the wardrobe piece (small)
+
+Each wardrobe piece's page has "Cut-out look off? Report it". It sends `POST /reports` with `kind:
+"image"`, `screen: "wardrobe.item"` and a new **`wardrobeItemId`** (uuid). That field is ignored
+today as unknown. Please store it (a nullable column on `bug_reports`) so a bad cut-out can be
+found. Admin tooling that shows the cut-out would make these quick to triage. The message can be
+the app's default ("The cut-out of this piece looks off.") when the user writes nothing.
+
+### 6. The user's own clothes in the feed (nice to have; the founder asked for it)
+
+"Start using those clothes in the feed as well."
+- Match each wardrobe piece's embedding to catalogue garments in the same slot (nearest neighbour
+  above a threshold).
+- In `GET /scroll` and the Home feeds, boost fits that contain a matched garment a little. Send
+  **`owned: true`** on those pieces in `Outfit.pieces`.
+- The app already reads `owned` (optional). The piece sheet then says "YOU OWN ONE LIKE THIS"
+  instead of "IN THIS FIT".
+
+Taylor's "only my wardrobe" already uses the wardrobe. Gap picks (what the closet is missing) can
+come later.
+
+### Privacy promises (the app's policy now says these, so the backend must keep them)
+
+- Drip only receives the photos the user picks. The phone sets the others aside before upload.
+- Only clothes are kept. Faces and backgrounds are thrown away.
+- **Photos are deleted from our servers within 24 hours of the pieces being cut out.**
+- The day a photo was taken becomes the piece's wear history.
+- Imported pieces are private to the user, like every wardrobe item.
+
 ## 2026-10-09: fits in the user's price range, and the style quiz
 
 ### Status of earlier requests

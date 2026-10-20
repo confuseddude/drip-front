@@ -37,6 +37,7 @@ import '../features/studio/studio_home_screen.dart';
 import '../features/stylist/taylor_result_screen.dart';
 import '../features/stylist/taylor_screen.dart';
 import '../features/wardrobe/add_to_wardrobe_screen.dart';
+import '../features/wardrobe/import/wardrobe_import_screen.dart';
 import '../features/wardrobe/item_detail_screen.dart';
 import '../features/wardrobe/saved_outfits_screen.dart';
 import '../features/wardrobe/wardrobe_screen.dart';
@@ -222,6 +223,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       _page('/themes', (_) => const ThemePickerScreen(), fade: true),
       _page('/stylist', (_) => const TaylorScreen()),
       _page('/stylist/result', (_) => const TaylorResultScreen()),
+      // Build the wardrobe from gallery photos (full screen, its own flow).
+      _page('/wardrobe/import', (_) => const WardrobeImportScreen()),
       // The camera sits to the left of Home: it slides in from the left and
       // swiping left closes it (like Instagram).
       GoRoute(

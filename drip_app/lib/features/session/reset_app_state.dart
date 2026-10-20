@@ -14,18 +14,22 @@ import '../settings/settings_controller.dart';
 import '../social/social_controller.dart';
 import '../studio/studio_controller.dart';
 import '../stylist/stylist_controller.dart';
+import '../wardrobe/import/import_controller.dart';
 import '../wardrobe/wardrobe_controller.dart';
 import 'session_controller.dart';
 
 /// Clears every piece of per-account state (called on logout) so the next
 /// session starts from a clean slate.
 void resetAppState(WidgetRef ref) {
+  // Stop following a gallery import (its progress notification too).
+  ref.read(wardrobeImportProvider.notifier).forget();
   // Data sources first so dependants rebuild from fresh repositories.
   ref
     ..invalidate(apiClientProvider)
     ..invalidate(feedRepositoryProvider)
     ..invalidate(outfitRepositoryProvider)
     ..invalidate(wardrobeRepositoryProvider)
+    ..invalidate(wardrobeImportRepositoryProvider)
     ..invalidate(studioRepositoryProvider)
     ..invalidate(postsRepositoryProvider)
     ..invalidate(socialRepositoryProvider)

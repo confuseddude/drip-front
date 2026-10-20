@@ -18,6 +18,7 @@ import '../../data/models/stylist.dart';
 import '../../data/models/wardrobe.dart';
 import '../../data/providers.dart';
 import '../../routing/main_shell.dart';
+import '../report/report_bug_sheet.dart';
 import '../studio/studio_controller.dart';
 import 'wardrobe_controller.dart';
 
@@ -259,10 +260,11 @@ class _Body extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _Prop(
-                        'SOURCE',
-                        item.origin == 'saved' ? 'From Drip' : 'Your photo',
-                      ),
+                      child: _Prop('SOURCE', switch (item.origin) {
+                        'saved' => 'From Drip',
+                        'import' => 'Your photos',
+                        _ => 'Your photo',
+                      }),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -306,6 +308,7 @@ class _Body extends ConsumerWidget {
               ],
             ),
           ),
+          if (item.isReady && item.wearCount > 0) _WearHistory(item: item),
           Container(
             margin: const EdgeInsets.only(top: 8),
             padding: const EdgeInsets.all(16),
@@ -376,10 +379,93 @@ class _Body extends ConsumerWidget {
                     ),
                   ],
                 ),
+                if (item.origin != 'saved' && !item.isProcessing)
+                  Tap(
+                    semanticLabel: 'Report this cut-out',
+                    onTap: () => showReportBug(
+                      context,
+                      screen: 'wardrobe.item',
+                      itemId: item.id,
+                      kind: 'image',
+                    ),
+                    child: SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: Text(
+                          'CUT-OUT LOOK OFF? REPORT IT',
+                          style: AppText.mono(10, color: AppColors.muted),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+/// How often the piece shows up in the user's photos (and the worn
+/// calendar), and the days.
+class _WearHistory extends StatelessWidget {
+  const _WearHistory({required this.item});
+  final WardrobeItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final last = item.lastWornAt;
+    final n = item.wearCount;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('WEAR HISTORY', style: AppText.mono(9, color: AppColors.muted)),
+          const SizedBox(height: 8),
+          Text(
+            n == 1 ? 'Worn once' : 'Worn $n times',
+            style: AppText.manrope(16, weight: FontWeight.w700),
+          ),
+          if (last != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Last worn ${formatDay(last)}',
+              style: AppText.manrope(12, color: AppColors.muted),
+            ),
+          ],
+          if (item.wornOn.length > 1) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final d in item.wornOn.take(12))
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.elevated),
+                    ),
+                    child: Text(
+                      formatDay(d).toUpperCase(),
+                      style: AppText.mono(9, color: AppColors.cream),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );

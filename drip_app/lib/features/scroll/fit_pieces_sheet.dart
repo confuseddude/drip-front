@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/overlays.dart';
@@ -268,10 +269,18 @@ class _PieceDetailsState extends ConsumerState<_PieceDetails> {
           ),
           const SizedBox(height: 3),
           Text(
-            '$kind · IN THIS FIT',
+            piece.owned && !inWardrobe
+                ? '$kind · YOU OWN ONE LIKE THIS'
+                : '$kind · IN THIS FIT',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppText.mono(9, color: AppColors.muted, letterSpacing: 1),
+            style: AppText.mono(
+              9,
+              color: piece.owned && !inWardrobe
+                  ? context.palette.accent
+                  : AppColors.muted,
+              letterSpacing: 1,
+            ),
           ),
           const Spacer(),
           Row(

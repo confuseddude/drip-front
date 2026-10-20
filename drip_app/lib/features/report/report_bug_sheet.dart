@@ -13,15 +13,23 @@ import '../../data/api/api_client.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/report_repository.dart';
 
-/// Opens "Report a bug" for [screen] (and the fit on it, [fitId]).
+/// Opens "Report a bug" for [screen] (and the fit on it, [fitId], or the
+/// wardrobe piece, [itemId]). [kind] pre-picks what's wrong.
 Future<void> showReportBug(
   BuildContext context, {
   required String screen,
   String? fitId,
+  String? itemId,
+  String? kind,
 }) async {
   final outcome = await showDripSheet<ReportOutcome>(
     context,
-    builder: (_) => ReportBugSheet(screen: screen, fitId: fitId),
+    builder: (_) => ReportBugSheet(
+      screen: screen,
+      fitId: fitId,
+      itemId: itemId,
+      initialKind: kind,
+    ),
   );
   if (outcome == null || !context.mounted) return;
   showDripToast(
@@ -36,9 +44,17 @@ Future<void> showReportBug(
 /// the fit (if the user keeps it attached), the app version and the phone's
 /// OS. Never photos or the account's content.
 class ReportBugSheet extends ConsumerStatefulWidget {
-  const ReportBugSheet({super.key, required this.screen, this.fitId});
+  const ReportBugSheet({
+    super.key,
+    required this.screen,
+    this.fitId,
+    this.itemId,
+    this.initialKind,
+  });
   final String screen;
   final String? fitId;
+  final String? itemId;
+  final String? initialKind;
 
   static const kinds = [
     ('broken', 'Something broke'),
@@ -54,7 +70,7 @@ class ReportBugSheet extends ConsumerStatefulWidget {
 
 class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
   final _message = TextEditingController();
-  String? _kind;
+  late String? _kind = widget.initialKind;
   bool _attachFit = true;
   bool _sending = false;
   String? _error;
@@ -67,7 +83,15 @@ class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
     super.dispose();
   }
 
-  bool get _ready => _kind != null && _message.text.trim().length >= 3;
+  /// A piece's report can go without words: the attached cut-out says it.
+  bool get _ready =>
+      _kind != null &&
+      (_message.text.trim().length >= 3 || (_piece && _attachFit));
+
+  bool get _piece => widget.itemId != null;
+
+  /// Sent when a piece's report has no words.
+  static const _pieceFallback = 'The cut-out of this piece looks off.';
 
   Future<void> _send() async {
     if (!_ready || _sending) return;
@@ -75,7 +99,8 @@ class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
       _sending = true;
       _error = null;
     });
-    final text = _message.text.trim();
+    var text = _message.text.trim();
+    if (text.length < 3) text = _pieceFallback;
     try {
       final outcome = await ref
           .read(reportRepositoryProvider)
@@ -87,6 +112,7 @@ class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
                   : text,
               screen: widget.screen,
               fitId: _attachFit ? widget.fitId : null,
+              wardrobeItemId: _attachFit ? widget.itemId : null,
               appVersion: Env.appVersion,
               platform: BugReport.thisPlatform(),
             ),
@@ -134,7 +160,7 @@ class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
           onChanged: (_) => setState(() {}),
           errorText: _error,
         ),
-        if (widget.fitId != null) ...[
+        if (widget.fitId != null || _piece) ...[
           const SizedBox(height: 12),
           Row(
             children: [
@@ -143,7 +169,7 @@ class _ReportBugSheetState extends ConsumerState<ReportBugSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Attach this fit',
+                      _piece ? 'Attach this piece' : 'Attach this fit',
                       style: AppText.manrope(13, weight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),

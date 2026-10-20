@@ -130,7 +130,7 @@ class PolicySection {
 
 /// The policy's words, apart from the screen so they're easy to review.
 abstract final class PrivacyPolicy {
-  static const updated = '9 OCTOBER 2026';
+  static const updated = '21 OCTOBER 2026';
 
   static const intro =
       'This explains what Drip collects, why, who helps us run it, what '
@@ -164,8 +164,11 @@ abstract final class PrivacyPolicy {
         ),
         (
           'Your wardrobe.',
-          'Photos of clothes you add, and pieces you save from the Drip '
-              'catalogue. Wardrobe photos are private to you.',
+          'Photos of clothes you add, outfit photos you choose from your '
+              'gallery to build your wardrobe, the day each of those was '
+              'taken, and pieces you save from the Drip catalogue. Drip only '
+              'ever sees the photos you pick, never the rest of your gallery. '
+              'Wardrobe photos are private to you.',
         ),
         (
           'Your Studio fits.',
@@ -176,8 +179,8 @@ abstract final class PrivacyPolicy {
           'Bug reports.',
           'When you report a bug: the kind of problem, what you write, the '
               'screen you were on, the app version and your phone\'s system '
-              'version, and the fit\'s id if you keep it attached. Never your '
-              'photos.',
+              'version, and the fit\'s or wardrobe piece\'s id if you keep it '
+              'attached. Never your photos.',
         ),
       ],
     ),
@@ -221,6 +224,12 @@ abstract final class PrivacyPolicy {
               'uploaded.',
         ),
         (
+          'Photo checks.',
+          'Before gallery photos upload, your phone checks them itself '
+              '(is someone in it, is it a group, is it too dark, is it a '
+              'repeat). Photos it sets aside never leave your phone.',
+        ),
+        (
           'App settings.',
           'Your theme, your progress through setup, Studio work in progress '
               'and bug reports waiting to be sent.',
@@ -239,6 +248,20 @@ abstract final class PrivacyPolicy {
           'To process your wardrobe.',
           'We cut each clothing photo out of its background on our own '
               'servers, then an AI model tags it (category, colour, season).',
+        ),
+        (
+          'To build your wardrobe from your photos.',
+          'In outfit photos you share, our own servers find each piece '
+              'you\'re wearing, cut it out and fold repeats together. Faces '
+              'and backgrounds are thrown away. The photos themselves are '
+              'deleted from our servers within 24 hours of your pieces being '
+              'cut out. The day a photo was taken becomes that piece\'s wear '
+              'history.',
+        ),
+        (
+          'To tell you it\'s ready.',
+          'A notification while your wardrobe is being built, and one when '
+              'it\'s done. Turn them off in your phone\'s settings.',
         ),
         (
           'For Taylor.',

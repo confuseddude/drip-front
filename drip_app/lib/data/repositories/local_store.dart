@@ -100,6 +100,13 @@ class LocalStore {
       ? _prefs.remove('reports.queued')
       : _prefs.setStringList('reports.queued', v);
 
+  /// The gallery import this device is following (its id), so a restart
+  /// picks the progress back up and the "ready" moment isn't missed.
+  String? get wardrobeImportId => _prefs.getString('wardrobe.import');
+  Future<void> setWardrobeImportId(String? v) => v == null
+      ? _prefs.remove('wardrobe.import')
+      : _prefs.setString('wardrobe.import', v);
+
   /// Wardrobe items marked "in rotation" (no backend field for this yet).
   Set<String> get rotation => _prefs.getStringList(_rotation)?.toSet() ?? {};
   Future<void> setRotation(Set<String> ids) =>

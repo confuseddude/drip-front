@@ -20,6 +20,9 @@ class WardrobeItem {
     this.origin = 'upload',
     this.garmentId,
     this.addedAt,
+    this.wearCount = 0,
+    this.lastWornAt,
+    this.wornOn = const [],
   });
 
   final String id;
@@ -45,10 +48,17 @@ class WardrobeItem {
   /// tagged).
   final String? slot;
 
-  /// `upload` (the user's photo) or `saved` (a catalog garment).
+  /// `upload` (one photo of one piece), `import` (found in the user's
+  /// gallery photos) or `saved` (a catalog garment).
   final String origin;
   final String? garmentId;
   final DateTime? addedAt;
+
+  /// Days the piece shows up in the user's photos (and the worn calendar):
+  /// how often, the latest, and the days themselves, newest first.
+  final int wearCount;
+  final DateTime? lastWornAt;
+  final List<DateTime> wornOn;
 
   bool get isProcessing => state == WardrobeStatus.processing;
   bool get isReady => state == WardrobeStatus.ready;
@@ -77,6 +87,9 @@ class WardrobeItem {
     origin: origin,
     garmentId: garmentId,
     addedAt: addedAt,
+    wearCount: wearCount,
+    lastWornAt: lastWornAt,
+    wornOn: wornOn,
   );
 
   /// From the API (`WardrobeItem` in docs/API.md).
@@ -105,12 +118,16 @@ class WardrobeItem {
       status: switch (state) {
         WardrobeStatus.processing => 'PROCESSING · CUTTING OUT…',
         WardrobeStatus.failed => "COULDN'T READ THIS PHOTO",
-        WardrobeStatus.ready =>
-          origin == 'saved' ? 'SAVED FROM DRIP' : 'DIGITIZED · READY',
+        WardrobeStatus.ready => switch (origin) {
+          'saved' => 'SAVED FROM DRIP',
+          'import' => 'FROM YOUR PHOTOS',
+          _ => 'DIGITIZED · READY',
+        },
       },
       colorway: colour == null ? '' : _cap(colour),
       tags: [
-        for (final t in (json['styleTags'] as List?) ?? const []) '#$t'.toUpperCase(),
+        for (final t in (json['styleTags'] as List?) ?? const [])
+          '#$t'.toUpperCase(),
         for (final s in (json['season'] as List?) ?? const [])
           if (s != 'all-season') '$s'.toUpperCase(),
       ],
@@ -120,6 +137,12 @@ class WardrobeItem {
       origin: origin,
       garmentId: json['garmentId'] as String?,
       addedAt: DateTime.tryParse(json['addedAt'] as String? ?? ''),
+      wearCount: (json['wearCount'] as num?)?.toInt() ?? 0,
+      lastWornAt: DateTime.tryParse(json['lastWornOn'] as String? ?? ''),
+      wornOn: [
+        for (final d in (json['wornOn'] as List?) ?? const [])
+          ?DateTime.tryParse('$d'),
+      ],
     );
   }
 

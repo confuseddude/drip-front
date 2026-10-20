@@ -22,6 +22,12 @@ dependencies:
   url_launcher: ^6.3.2
   # The app's own folder for the selfie, which stays on the device.
   path_provider: ^2.1.5
+  flutter_local_notifications: ^22.3.2
+  exif: ^3.3.0
+  google_mlkit_face_detection: ^0.15.1
+  google_mlkit_pose_detection: ^0.16.1
+  image_picker_android: ^0.8.13+25
+  image_picker_platform_interface: ^2.11.2
 
 dev_dependencies:
   flutter_test:

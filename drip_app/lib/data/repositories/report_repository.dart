@@ -17,6 +17,7 @@ class BugReport {
     required this.appVersion,
     required this.platform,
     this.fitId,
+    this.wardrobeItemId,
     this.createdAt,
   });
 
@@ -29,6 +30,10 @@ class BugReport {
 
   /// The fit on screen, when the user chose to attach it.
   final String? fitId;
+
+  /// The wardrobe piece on screen (a cut-out that came out wrong), when
+  /// attached.
+  final String? wardrobeItemId;
   final String appVersion;
 
   /// `android 14`, `ios 18.1`.
@@ -47,6 +52,7 @@ class BugReport {
     'message': message,
     'screen': screen,
     'fitId': ?fitId,
+    'wardrobeItemId': ?wardrobeItemId,
     'appVersion': appVersion,
     'platform': platform,
     'createdAt': (createdAt ?? DateTime.now()).toUtc().toIso8601String(),

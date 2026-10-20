@@ -53,3 +53,15 @@ String formatAgo(DateTime? t, {DateTime? now}) {
   if (d.inDays < 7) return '${d.inDays}D AGO';
   return '${(d.inDays / 7).floor()}W AGO';
 }
+
+const _months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/// "12 Mar" this year, "12 Mar 2025" otherwise (a day, not a moment).
+String formatDay(DateTime d, {DateTime? now}) {
+  final year = (now ?? DateTime.now()).year;
+  final day = '${d.day} ${_months[d.month - 1]}';
+  return d.year == year ? day : '$day ${d.year}';
+}
