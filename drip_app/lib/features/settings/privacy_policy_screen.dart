@@ -130,7 +130,7 @@ class PolicySection {
 
 /// The policy's words, apart from the screen so they're easy to review.
 abstract final class PrivacyPolicy {
-  static const updated = '21 OCTOBER 2026';
+  static const updated = '4 NOVEMBER 2026';
 
   static const intro =
       'This explains what Drip collects, why, who helps us run it, what '
@@ -205,6 +205,17 @@ abstract final class PrivacyPolicy {
               'account details.',
         ),
         (
+          'Errors from the app.',
+          'When something breaks in the app on your phone, it sends us a '
+              'short error report: what went wrong and where in our code, the '
+              'screen you were on, the app version and your phone\'s system '
+              'version. For a failed request, only which kind of request it '
+              'was and the error code. We take out emails, usernames, ids and '
+              'anything you typed first, and never include screenshots or '
+              'photos. These reports go only to our own database, with your '
+              'bug reports, linked to your account.',
+        ),
+        (
           'Abuse protection.',
           'Short-lived counters of how often your account calls our servers, '
               'to stop spam and abuse.',
@@ -232,7 +243,7 @@ abstract final class PrivacyPolicy {
         (
           'App settings.',
           'Your theme, your progress through setup, Studio work in progress '
-              'and bug reports waiting to be sent.',
+              'and bug and error reports waiting to be sent.',
         ),
       ],
     ),
@@ -271,7 +282,7 @@ abstract final class PrivacyPolicy {
         ),
         (
           'To fix and improve Drip.',
-          'Usage, error details and your bug reports.',
+          'Usage, errors from the app and your bug reports.',
         ),
       ],
     ),
@@ -280,7 +291,7 @@ abstract final class PrivacyPolicy {
       body: 'These services handle data for us, only to do their job for Drip:',
       points: [
         ('Supabase.', 'Sign-in, our database and file storage, in Singapore.'),
-        ('Railway.', 'Runs Drip\'s servers, in Singapore.'),
+        ('Google Cloud.', 'Runs Drip\'s servers, in Singapore.'),
         (
           'Upstash and Inngest.',
           'A short-term cache (your feed\'s order, abuse counters) and the '
@@ -294,7 +305,10 @@ abstract final class PrivacyPolicy {
               'notes.',
         ),
         ('PostHog.', 'Usage analytics, as described above.'),
-        ('Sentry.', 'Error reports from our servers.'),
+        (
+          'Sentry.',
+          'Error reports from our servers only. Errors from the app go to our own database, not to Sentry.',
+        ),
         ('GitHub.', 'Stores encrypted daily backups for 14 days.'),
         ('Google.', 'Sign-in with your Google account.'),
       ],

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,10 +10,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/env.dart';
+import 'core/errors/error_reporter.dart';
 import 'data/providers.dart';
 
-Future<void> main() async {
+/// Everything runs in a zone that hands uncaught errors to the app's own
+/// error reports (see [ErrorReporter]).
+void main() {
+  runZonedGuarded(_start, ErrorReporter.instance.recordError);
+}
+
+Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ErrorReporter.instance.install();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

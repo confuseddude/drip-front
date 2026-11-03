@@ -3,6 +3,28 @@
 From the Flutter session, for the backend session. Newest first. Each request says what the app
 does today without it, so nothing is blocked.
 
+## 2026-11-04: where things stand after the move to Cloud Run
+
+The API now runs on Google Cloud Run (`https://drip-api-cjtz5x4sgq-as.a.run.app`); `config/dev.json`
+and `env.dart` point there, and Railway is gone. The app treats `/health` as public (Cloud Run keeps
+`/healthz` for itself). New images arrive as WebP and older ones stay PNG; the app reads both, so
+nothing changed in the app for that.
+
+| Request (2026-10-21) | Status |
+|---|---|
+| #1 Gallery import API | Built to the contract (Backend PR #15, merged). **On the cloud database its migration (`…20261024000001`) isn't applied yet**, so `GET /wardrobe/imports` and `DELETE /wardrobe/items/:id` answer 500 until the migrations workflow runs. No app change needed after. |
+| #2 Pipeline | Cut-outs per photo work. **Repeats are not folded yet** (the same tee in 3 photos is 3 pieces; `duplicatesMerged`/`alreadyOwned` stay 0, `stage` stays `photos`). Still needed: there's no review screen. |
+| #3 Wear history | Built (`wearCount`, `lastWornOn`, `wornOn`); live once the migration is applied. |
+| #4 Push | Parked by the founder; the app uses local notifications. |
+| #5 `wardrobeItemId` on `/reports` | Not yet. The app already sends it; the backend ignores it for now. |
+| #6 `owned` on feed pieces | Not yet. The app shows "You own one like this" when it arrives. |
+
+**App-side error reports (2026-11-03, branch `feat/error-reports`).** The app now sends its own
+errors (uncaught Dart errors, and API calls that failed with a 5xx or never reached the server) as
+`POST /reports` with `kind: "broken"` and a message starting `[auto] `. No backend change: they land
+in `bug_reports` with the manual ones. At most 10 an hour, 5 a session, the same error once per 10
+minutes, so manual reports always fit in the 30-an-hour limit. Release builds only.
+
 ## 2026-10-21: build the wardrobe from the user's gallery photos (big; founder-approved)
 
 The founder wants Wardrobe to work like Google Photos' Wardrobe. The user shares outfit photos and

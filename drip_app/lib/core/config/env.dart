@@ -9,7 +9,7 @@ abstract final class Env {
   // Row Level Security protects the data. Pass a --dart-define to override.
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://drip-backend-production-dc7f.up.railway.app',
+    defaultValue: 'https://drip-api-cjtz5x4sgq-as.a.run.app',
   );
   static const supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',

@@ -44,8 +44,8 @@ class ApiException implements Exception {
 
 /// The one door to the Drip API (`docs/API.md` in Backend_app).
 ///
-/// - Adds `Authorization: Bearer <jwt>` to every call except `/healthz` and
-///   `/meta`.
+/// - Adds `Authorization: Bearer <jwt>` to every call except the health
+///   check and `/meta`.
 /// - On a 401 it refreshes the session once and retries; if that fails too,
 ///   it signs out (the router then returns to the welcome screen).
 /// - On a 429 it waits out a short `Retry-After` once, else surfaces it.
@@ -57,6 +57,7 @@ class ApiClient {
     http.Client? client,
     this.timeout = const Duration(seconds: 20),
     this.uploadHeaders = const {},
+    this.onFailure,
   }) : _base = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/'),
        _http = client ?? http.Client();
 
@@ -68,25 +69,30 @@ class ApiClient {
   /// Extra headers for direct-to-storage uploads (the Supabase `apikey`).
   final Map<String, String> uploadHeaders;
 
-  static const _publicPaths = {'/healthz', '/meta'};
+  /// Told about every failed call (method, path, status; never the body),
+  /// for the app's error reports.
+  final void Function(String method, String path, int status)? onFailure;
+
+  // `/health` on Cloud Run, which keeps `/healthz` for itself on `*.run.app`.
+  static const _publicPaths = {'/health', '/healthz', '/meta'};
 
   /// Longest `Retry-After` worth waiting for silently before giving up.
   static const _maxSilentWait = Duration(seconds: 4);
 
   Future<dynamic> get(String path, {Map<String, String>? query}) =>
-      _send('GET', path, query: query);
+      _call('GET', path, query: query);
 
   Future<dynamic> post(String path, [Object? body]) =>
-      _send('POST', path, body: body);
+      _call('POST', path, body: body);
 
   Future<dynamic> put(String path, [Object? body]) =>
-      _send('PUT', path, body: body);
+      _call('PUT', path, body: body);
 
   Future<dynamic> patch(String path, [Object? body]) =>
-      _send('PATCH', path, body: body);
+      _call('PATCH', path, body: body);
 
   Future<dynamic> delete(String path, [Object? body]) =>
-      _send('DELETE', path, body: body);
+      _call('DELETE', path, body: body);
 
   /// PUTs raw bytes to a one-time signed upload URL the API handed out. The
   /// image never passes through the API server.
@@ -122,6 +128,20 @@ class ApiClient {
     return query == null || query.isEmpty
         ? uri
         : uri.replace(queryParameters: query);
+  }
+
+  Future<dynamic> _call(
+    String method,
+    String path, {
+    Map<String, String>? query,
+    Object? body,
+  }) async {
+    try {
+      return await _send(method, path, query: query, body: body);
+    } on ApiException catch (e) {
+      onFailure?.call(method, path, e.status);
+      rethrow;
+    }
   }
 
   Future<dynamic> _send(
@@ -213,8 +233,10 @@ class ApiClient {
       // Not JSON (a proxy error page): keep the generic message.
     }
     if (kDebugMode) {
-      debugPrint('[api] ${res.request?.method} ${res.request?.url.path} '
-          '→ ${res.statusCode}: $message');
+      debugPrint(
+        '[api] ${res.request?.method} ${res.request?.url.path} '
+        '→ ${res.statusCode}: $message',
+      );
     }
     return ApiException(
       res.statusCode,

@@ -22,7 +22,8 @@ Google sign-in returns through `com.drip.drip://login-callback` (Android intent 
 must be listed in Supabase → Authentication → URL Configuration → Redirect URLs.
 
 `flutter run -d chrome` needs the API's `CORS_ORIGINS` to include `http://localhost:5555` and
-`--web-port 5555`; use a phone or `-d windows` until that's set on Railway.
+`--web-port 5555`; use a phone or `-d windows` until that's set on the API (Google Cloud Run,
+`https://drip-api-cjtz5x4sgq-as.a.run.app`, the default in `config/dev.json` and `env.dart`).
 
 Requires Flutter 3.47+ (Dart 3.13).
 

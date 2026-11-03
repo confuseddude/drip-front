@@ -102,6 +102,23 @@ class LocalStore {
 
   /// The gallery import this device is following (its id), so a restart
   /// picks the progress back up and the "ready" moment isn't missed.
+  /// Error reports the app made by itself, waiting to be sent: a queue of
+  /// their own, so they never push the user's own reports out.
+  List<String> get queuedAutoReports =>
+      _prefs.getStringList('reports.autoQueued') ?? const [];
+  Future<void> setQueuedAutoReports(List<String> v) => v.isEmpty
+      ? _prefs.remove('reports.autoQueued')
+      : _prefs.setStringList('reports.autoQueued', v);
+
+  /// When recent error reports were sent (epoch ms), for the hourly limit.
+  List<int> get autoReportsSent => [
+    for (final s in _prefs.getStringList('reports.autoSent') ?? const [])
+      ?int.tryParse(s),
+  ];
+  Future<void> setAutoReportsSent(List<int> v) => v.isEmpty
+      ? _prefs.remove('reports.autoSent')
+      : _prefs.setStringList('reports.autoSent', [for (final t in v) '$t']);
+
   String? get wardrobeImportId => _prefs.getString('wardrobe.import');
   Future<void> setWardrobeImportId(String? v) => v == null
       ? _prefs.remove('wardrobe.import')

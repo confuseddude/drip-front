@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
 import '../core/config/env.dart';
+import '../core/errors/error_reporter.dart';
 import 'api/api_client.dart';
 import 'models/account.dart';
 import 'models/meta.dart';
@@ -46,6 +47,7 @@ final apiClientProvider = Provider<ApiClient>(
     baseUrl: Env.apiBaseUrl,
     auth: ref.watch(authRepositoryProvider),
     uploadHeaders: {'apikey': Env.supabasePublishableKey},
+    onFailure: ErrorReporter.instance.recordApiFailure,
   ),
 );
 

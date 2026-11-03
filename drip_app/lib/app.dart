@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/errors/error_reporter.dart';
 import 'core/platform/app_icon.dart';
 import 'core/platform/notifications.dart';
 import 'core/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/drip_skin.dart';
 import 'core/widgets/overlays.dart';
 import 'core/widgets/theme_backdrop.dart';
+import 'data/providers.dart';
 import 'features/session/session_controller.dart';
 import 'features/settings/settings_controller.dart';
 import 'features/wardrobe/import/import_controller.dart';
@@ -32,6 +34,18 @@ class _DripAppState extends ConsumerState<DripApp> {
     ref
         .read(notificationsProvider)
         .init(onOpen: (payload) => ref.read(routerProvider).go('/$payload'));
+    // Errors from here on go out as `[auto]` reports, named by the route on
+    // screen (its template, never real ids).
+    final auth = ref.read(authRepositoryProvider);
+    ErrorReporter.instance.attach(
+      ApiAutoReportSink(
+        ref.read(apiClientProvider),
+        signedIn: () => auth.accessToken != null,
+      ),
+      ref.read(localStoreProvider),
+      screen: () =>
+          ref.read(routerProvider).routerDelegate.currentConfiguration.fullPath,
+    );
     // A gallery import still running from last time carries on.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && ref.read(sessionProvider).signedIn) {
@@ -71,6 +85,7 @@ class _DripAppState extends ConsumerState<DripApp> {
     ref.listen(sessionProvider.select((s) => s.signedIn), (was, signedIn) {
       if (signedIn && was != true) {
         ref.read(wardrobeImportProvider.notifier).resume();
+        ErrorReporter.instance.flush();
       }
     });
     ref.listen(wardrobeImportProvider.select((r) => r.phase), (was, phase) {
