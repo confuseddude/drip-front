@@ -139,11 +139,11 @@ void main() {
       await t.pump(const Duration(milliseconds: 100));
     }
 
-    final share = t.getRect(find.byIcon(Icons.ios_share_rounded));
-    final bug = t.getRect(find.byIcon(Icons.bug_report_outlined));
+    final share = t.getRect(find.byIcon(Icons.send_outlined));
+    final bug = t.getRect(find.byIcon(Icons.outlined_flag_rounded));
     expect(bug.top, greaterThan(share.bottom), reason: 'below Share');
 
-    await t.tap(find.byIcon(Icons.bug_report_outlined));
+    await t.tap(find.byIcon(Icons.outlined_flag_rounded));
     for (var i = 0; i < 6; i++) {
       await t.pump(const Duration(milliseconds: 100));
     }

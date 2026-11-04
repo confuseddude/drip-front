@@ -120,11 +120,12 @@ void main() {
       await boot(t);
       await openScroll(t, 'o_gray');
 
-      // Collapsed: identity + a one-line caption + the rail. No metadata.
+      // Collapsed: identity, a one-line caption, shop the look and the
+      // rail. The score and tags wait behind "more".
       expect(find.text('@drip'), findsOneWidget);
-      expect(find.text('FOLLOW'), findsOneWidget);
-      expect(find.text('MORE'), findsOneWidget);
-      expect(find.textContaining('SHOP THE LOOK'), findsNothing);
+      expect(find.text('Follow'), findsOneWidget);
+      expect(find.text('more'), findsOneWidget);
+      expect(find.textContaining('SHOP THE LOOK'), findsOneWidget);
       expect(find.textContaining('✦ DRIP'), findsNothing);
       expect(find.text('MINIMAL'), findsNothing);
       for (final l in ['Like', 'Comments', 'Save', 'Share']) {
@@ -132,41 +133,41 @@ void main() {
       }
 
       // Tap the caption: details open in place (still on the scroll route).
-      await t.tap(find.text('MORE'));
+      await t.tap(find.text('more'));
       await settle(t, 500);
       expect(find.textContaining('SHOP THE LOOK'), findsOneWidget);
       expect(find.text('✦ DRIP 95'), findsOneWidget);
       expect(find.text('MINIMAL'), findsOneWidget);
-      expect(find.text('LESS'), findsOneWidget);
+      expect(find.text('less'), findsOneWidget);
       expect(find.textContaining(r'₹'), findsWidgets, reason: 'price shown');
       expect(find.byType(FashionScrollScreen), findsOneWidget);
       expect(find.byType(OutfitDetailScreen), findsNothing);
 
       // Collapse via the caption again.
-      await t.tap(find.text('LESS'));
+      await t.tap(find.text('less'));
       await settle(t, 500);
-      expect(find.textContaining('SHOP THE LOOK'), findsNothing);
-      expect(find.text('MORE'), findsOneWidget);
+      expect(find.textContaining('✦ DRIP'), findsNothing);
+      expect(find.text('more'), findsOneWidget);
 
       // Open, then close by tapping the picture.
-      await t.tap(find.text('MORE'));
+      await t.tap(find.text('more'));
       await settle(t, 500);
       expect(find.textContaining('SHOP THE LOOK'), findsOneWidget);
       await t.tapAt(const Offset(195, 250));
       await settle(t, 500);
-      expect(find.textContaining('SHOP THE LOOK'), findsNothing);
+      expect(find.textContaining('✦ DRIP'), findsNothing);
     });
 
     testWidgets('swiping to the next fit leaves its details closed', (t) async {
       await boot(t);
       await openScroll(t, 'o_gray');
-      await t.tap(find.text('MORE'));
+      await t.tap(find.text('more'));
       await settle(t, 500);
       expect(find.textContaining('SHOP THE LOOK'), findsOneWidget);
       await t.fling(find.byType(PageView), const Offset(0, -500), 1800);
       await settle(t, 900);
-      expect(find.textContaining('SHOP THE LOOK'), findsNothing);
-      expect(find.text('MORE'), findsOneWidget);
+      expect(find.textContaining('✦ DRIP'), findsNothing);
+      expect(find.text('more'), findsOneWidget);
     });
 
     testWidgets('actions still work from the collapsed rail', (t) async {
@@ -185,14 +186,14 @@ void main() {
       expect(find.text('SHARING IS COMING AFTER BETA ✦'), findsOneWidget);
     });
 
-    testWidgets('the shop strip still opens the look', (t) async {
+    testWidgets('the shop strip opens the pieces over the feed', (t) async {
       await boot(t);
       await openScroll(t, 'o_gray');
-      await t.tap(find.text('MORE'));
-      await settle(t, 500);
       await t.tap(find.textContaining('SHOP THE LOOK'));
       await settle(t, 900);
-      expect(find.byType(OutfitDetailScreen), findsOneWidget);
+      // The sheet's own title, over the Scroll.
+      expect(find.text('SHOP THE LOOK'), findsOneWidget);
+      expect(find.byType(FashionScrollScreen), findsOneWidget);
     });
   });
 
@@ -225,7 +226,7 @@ void main() {
         expect(collage.width, greaterThan(screen.width * 0.5));
 
         // Opening the details shrinks it instead of covering it.
-        await t.tap(find.text('MORE'));
+        await t.tap(find.text('more'));
         await settle(t, 600);
         final open = t.getRect(collageImage);
         final shop = t.getRect(find.textContaining('SHOP THE LOOK'));
@@ -248,9 +249,8 @@ void main() {
       await settle(t, 600);
 
       final expected = await t.runAsync(() async {
-        final stream = dripImageProvider(fit.image).resolve(
-          ImageConfiguration.empty,
-        );
+        final stream = dripImageProvider(fit.image)
+            .resolve(ImageConfiguration.empty);
         final done = Completer<ui.Image>();
         stream.addListener(
           ImageStreamListener((info, _) => done.complete(info.image)),

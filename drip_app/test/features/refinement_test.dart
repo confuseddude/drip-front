@@ -253,7 +253,8 @@ void main() {
       await t.tap(find.text('DATE NIGHT'));
       await settle(t, 1200);
       expect(find.byType(FashionScrollScreen), findsOneWidget);
-      expect(find.text('FITS FOR DATE NIGHT'), findsOneWidget);
+      // The top bar's occasion pill names it.
+      expect(find.text('Date night'), findsOneWidget);
       container.read(routerProvider).pop();
       await settle(t, 700);
       expect(loc(container), '/home');

@@ -13,7 +13,6 @@ import '../../core/utils/format.dart';
 import '../../core/utils/image_color.dart';
 import '../../core/widgets/drip_image.dart';
 import '../../core/widgets/fit_hero.dart';
-import '../../core/widgets/glass.dart';
 import '../../core/widgets/like_burst.dart';
 import '../../core/widgets/overlays.dart';
 import '../../core/widgets/skeleton.dart';
@@ -148,6 +147,25 @@ class _FashionScrollScreenState extends ConsumerState<FashionScrollScreen> {
     }
   }
 
+  /// Opens the Scroll on [id]'s fits (all fits when null), in place of this
+  /// one.
+  void _openOccasion(String? id) {
+    if (id == widget.occasion) return;
+    Haptics.tick();
+    final to = id == null ? '/scroll' : '/scroll?occasion=$id';
+    if (context.canPop()) {
+      context.pushReplacement(to);
+    } else {
+      context.go(to);
+    }
+  }
+
+  void _pickOccasion() => showOccasionPicker(
+    context,
+    current: widget.occasion,
+    onPick: _openOccasion,
+  );
+
   void _toTop() {
     Haptics.tick();
     _pc?.animateToPage(0, duration: Motion.page, curve: Motion.out);
@@ -179,15 +197,18 @@ class _FashionScrollScreenState extends ConsumerState<FashionScrollScreen> {
                       'No fits in the catalogue suit this one yet. More '
                       'land every day.',
                   actionLabel: 'BROWSE EVERYTHING',
-                  onAction: () => context.go('/scroll'),
+                  onAction: () => _openOccasion(null),
                 ),
-                if (context.canPop())
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: _TopChrome(onBack: _back, label: occasion.label),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: _TopChrome(
+                    onBack: context.canPop() ? _back : null,
+                    label: occasion.label,
+                    onPick: _pickOccasion,
                   ),
+                ),
               ],
             );
           }
@@ -229,10 +250,14 @@ class _FashionScrollScreenState extends ConsumerState<FashionScrollScreen> {
                   itemCount: items.length + 1,
                   onPageChanged: (i) => _onPage(state, i),
                   itemBuilder: (context, i) => i < items.length
-                      ? _ReelPage(
-                          key: ValueKey(items[i].id),
-                          outfit: items[i],
-                          active: i == _page,
+                      ? _Depth(
+                          controller: pc,
+                          index: i,
+                          child: _ReelPage(
+                            key: ValueKey(items[i].id),
+                            outfit: items[i],
+                            active: i == _page,
+                          ),
                         )
                       : _FeedTail(
                           state: state,
@@ -242,16 +267,16 @@ class _FashionScrollScreenState extends ConsumerState<FashionScrollScreen> {
                         ),
                 ),
               ),
-              if (context.canPop() || occasion != null)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _TopChrome(
-                    onBack: context.canPop() ? _back : null,
-                    label: occasion?.label,
-                  ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _TopChrome(
+                  onBack: context.canPop() ? _back : null,
+                  label: occasion?.label,
+                  onPick: _pickOccasion,
                 ),
+              ),
             ],
           );
         },
@@ -290,12 +315,19 @@ class _FeedTail extends StatelessWidget {
 
 // ────────────────────────────────────────────────────────────────── chrome
 
+/// The Scroll's top bar: back (when there's somewhere to go back to) and the
+/// occasion being browsed, as a pill that opens the occasion picker.
+///
+/// Solid tinted surfaces, never live blur: a blur here would be redrawn every
+/// frame of every swipe underneath it, the main cause of jank on mid-range
+/// Android phones.
 class _TopChrome extends StatelessWidget {
-  const _TopChrome({required this.onBack, this.label});
+  const _TopChrome({required this.onBack, required this.onPick, this.label});
 
   final VoidCallback? onBack;
+  final VoidCallback onPick;
 
-  /// The occasion being browsed, shown as a chip.
+  /// The occasion being browsed; null is every fit.
   final String? label;
 
   @override
@@ -306,35 +338,185 @@ class _TopChrome extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 6, 16, 0),
         child: Row(
           children: [
-            if (onBack != null)
-              GlassIconButton(
-                semanticLabel: 'Back',
+            if (onBack != null) ...[
+              Tap(
                 onTap: onBack,
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 17,
-                  color: AppColors.cream,
+                scale: 0.92,
+                semanticLabel: 'Back',
+                child: const _Scrim(
+                  width: 44,
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 17,
+                    color: AppColors.cream,
+                  ),
                 ),
               ),
-            if (label != null) ...[
-              const SizedBox(width: 10),
-              Glass(
-                radius: 18,
-                thickness: GlassThickness.thin,
-                shadow: false,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 9,
-                ),
-                child: Text(
-                  'FITS FOR ${label!.toUpperCase()}',
-                  style: AppText.mono(10, letterSpacing: 1.2),
-                ),
-              ),
+              const SizedBox(width: 8),
             ],
+            Tap(
+              onTap: onPick,
+              scale: 0.96,
+              semanticLabel:
+                  '${label == null ? 'All occasions' : 'Fits for $label'}. '
+                  'Change the occasion',
+              child: _Scrim(
+                padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label ?? 'All occasions',
+                      style: AppText.manrope(13, weight: FontWeight.w700),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.cream,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A dark, see-through pill that reads on any picture (pale flat-lays too)
+/// without blurring what's under it.
+class _Scrim extends StatelessWidget {
+  const _Scrim({required this.child, this.width, this.padding});
+  final Widget child;
+  final double? width;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: 44,
+      padding: padding,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.base.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Every occasion, to switch the Scroll to; [current] is ticked.
+void showOccasionPicker(
+  BuildContext context, {
+  required String? current,
+  required ValueChanged<String?> onPick,
+}) {
+  final accent = context.palette.accent;
+  Widget row(BuildContext ctx, String? id, String label, String line) {
+    final on = id == current;
+    return Tap(
+      onTap: () {
+        Navigator.of(ctx).pop();
+        onPick(id);
+      },
+      semanticLabel: on ? '$label, showing now' : label,
+      scale: 0.98,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 56),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppText.manrope(
+                      15,
+                      weight: FontWeight.w700,
+                      color: on ? accent : AppColors.cream,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    line,
+                    style: AppText.manrope(12, color: AppColors.muted),
+                  ),
+                ],
+              ),
+            ),
+            if (on) Icon(Icons.check_rounded, size: 20, color: accent),
+          ],
+        ),
+      ),
+    );
+  }
+
+  showDripSheet<void>(
+    context,
+    builder: (ctx) => SheetContent(
+      title: 'FITS FOR',
+      children: [
+        row(ctx, null, 'All occasions', 'Everything, ranked for you'),
+        for (final o in Occasions.all) row(ctx, o.id, o.label, o.line),
+      ],
+    ),
+  );
+}
+
+/// Depth on the way out: the fit you swipe away sinks back a little and
+/// dims, so the next one reads as coming over it.
+class _Depth extends StatelessWidget {
+  const _Depth({
+    required this.controller,
+    required this.index,
+    required this.child,
+  });
+  final PageController controller;
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    // Its own layer: the page underneath isn't repainted as this one moves.
+    final page = RepaintBoundary(child: child);
+    if (Motion.reduced(context)) return page;
+    return AnimatedBuilder(
+      animation: controller,
+      child: page,
+      builder: (context, child) {
+        final at = controller.hasClients && controller.position.haveDimensions
+            ? controller.page ?? index.toDouble()
+            : index.toDouble();
+        final out = (at - index).clamp(0.0, 1.0);
+        // The same widgets every frame (only their values change), so the
+        // page keeps its state while it moves.
+        return Transform.scale(
+          scale: 1 - 0.06 * out,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28 * out),
+            clipBehavior: out > 0 ? Clip.antiAlias : Clip.none,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                child!,
+                IgnorePointer(
+                  child: ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.45 * out),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -429,10 +611,9 @@ class _ReelPageState extends ConsumerState<_ReelPage> {
     final outfit = widget.outfit;
     final collage = outfit.isCollage;
     final pad = MediaQuery.paddingOf(context);
-    // Clear of the status bar / cutout, and of the back button when there is
-    // one. `pad.bottom` already includes the floating nav's height (the shell
-    // adds it).
-    final top = pad.top + (context.canPop() ? 58.0 : 8.0);
+    // Clear of the status bar / cutout and the top bar. `pad.bottom` already
+    // includes the floating nav's height (the shell adds it).
+    final top = pad.top + 58.0;
     final fade = Motion.dur(context, Motion.content);
     // A collage's empty space is painted in the collage's own background, so
     // the flat-lay reads as filling the screen. Text over a pale one flips to
@@ -559,6 +740,7 @@ class _ReelPageState extends ConsumerState<_ReelPage> {
                       child: _Stage(
                         outfit: outfit,
                         expanded: _expanded,
+                        ink: light ? AppColors.base : AppColors.cream,
                         shop: ShopTheLook(
                           spots: _spots,
                           onOpen: _expanded ? null : _openShop,
@@ -597,11 +779,15 @@ class _Stage extends StatelessWidget {
   const _Stage({
     required this.outfit,
     required this.expanded,
+    required this.ink,
     required this.shop,
     required this.onBackground,
   });
   final Outfit outfit;
   final bool expanded;
+
+  /// The rail's colour: cream, or dark ink over a pale flat-lay.
+  final Color ink;
 
   /// Shop-the-look settings; the collage wraps itself in a copy of it.
   final ShopTheLook shop;
@@ -640,7 +826,7 @@ class _Stage extends StatelessWidget {
                     duration: Motion.dur(context, Motion.quick),
                     child: HintAnchor(
                       id: 'scroll.rail',
-                      child: _ActionRail(outfit: outfit),
+                      child: _ActionRail(outfit: outfit, ink: ink),
                     ),
                   ),
                 ),
@@ -751,8 +937,9 @@ class _FittedCollageState extends State<_FittedCollage> {
 
 // ──────────────────────────────────────────────────────────── info panel
 
-/// Who it's from, in one line, plus a caption to tap. Opens, in place, into the
-/// tags, the shop strip, the price and the score.
+/// Instagram's reel caption block: who it's from, a one-line caption to tap,
+/// and "Shop the look" with the pieces' faces and the price. Tapping the
+/// caption opens the tags and the score in place.
 class _InfoPanel extends StatelessWidget {
   const _InfoPanel({
     required this.outfit,
@@ -773,7 +960,7 @@ class _InfoPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, bottom + 8),
+      padding: EdgeInsets.fromLTRB(16, 0, 16, bottom + 10),
       child: AnimatedSize(
         duration: Motion.dur(context, Motion.content),
         curve: Motion.out,
@@ -797,35 +984,30 @@ class _InfoPanel extends StatelessWidget {
                   child: Text('d.', style: AppText.fredoka(15)),
                 ),
                 const SizedBox(width: 10),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '@drip',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.manrope(
-                          14,
-                          weight: FontWeight.w800,
-                          color: ink,
-                        ),
-                      ),
-                      if (expanded)
-                        Text(
-                          outfit.isCollage ? 'CURATED FLAT-LAY' : 'CURATED FIT',
-                          style: AppText.mono(
-                            9,
-                            color: ink.withValues(alpha: 0.65),
-                          ),
-                        ),
-                    ],
+                Text(
+                  '@drip',
+                  style: AppText.manrope(
+                    14,
+                    weight: FontWeight.w800,
+                    color: ink,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    outfit.isCollage ? 'Flat-lay' : 'Curated fit',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.manrope(
+                      12,
+                      weight: FontWeight.w500,
+                      color: ink.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
                 _FollowChip(
-                  following: false,
+                  ink: ink,
                   onTap: () => showAfterBeta(context, 'Following creators'),
                 ),
               ],
@@ -842,15 +1024,25 @@ class _InfoPanel extends StatelessWidget {
                 onTap: onToggle,
                 behavior: HitTestBehavior.opaque,
                 child: expanded
-                    ? Glass(
-                        radius: 22,
-                        shadow: false,
+                    ? Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.base.withValues(alpha: 0.82),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                        ),
                         child: _Details(outfit: outfit),
                       )
                     : _Caption(title: outfit.title, ink: ink),
               ),
             ),
+            if (outfit.pieces.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              _ShopStrip(outfit: outfit),
+            ],
           ],
         ),
       ),
@@ -875,17 +1067,16 @@ class _Caption extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.manrope(13, weight: FontWeight.w600, color: ink),
+              style: AppText.manrope(14, weight: FontWeight.w600, color: ink),
             ),
           ),
           const SizedBox(width: 6),
           Text(
-            'MORE',
-            style: AppText.mono(
-              9,
-              color: ink.withValues(alpha: 0.65),
-              weight: FontWeight.w500,
-              letterSpacing: 1.2,
+            'more',
+            style: AppText.manrope(
+              13,
+              weight: FontWeight.w600,
+              color: ink.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -902,6 +1093,7 @@ class _Details extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final story = outfit.colourStory;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -911,27 +1103,41 @@ class _Details extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                outfit.title.toUpperCase(),
+                outfit.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.display(18, lineHeight: 22),
+                style: AppText.manrope(
+                  17,
+                  weight: FontWeight.w800,
+                  lineHeight: 22,
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 3),
               child: Text(
-                'LESS',
-                style: AppText.mono(
-                  9,
+                'less',
+                style: AppText.manrope(
+                  13,
+                  weight: FontWeight.w600,
                   color: AppColors.muted,
-                  weight: FontWeight.w500,
-                  letterSpacing: 1.2,
                 ),
               ),
             ),
           ],
         ),
+        if (story != null && story.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            story,
+            style: AppText.manrope(
+              13,
+              color: const Color(0xFFE6DED0),
+              lineHeight: 18,
+            ),
+          ),
+        ],
         const SizedBox(height: 10),
         Wrap(
           spacing: 6,
@@ -942,48 +1148,34 @@ class _Details extends StatelessWidget {
             _MetaChip('✦ DRIP ${outfit.rate}', color: p.accent),
           ],
         ),
-        if (outfit.pieces.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          _ShopStrip(outfit: outfit),
-        ],
       ],
     );
   }
 }
 
+/// Instagram's outlined "Follow" on a reel.
 class _FollowChip extends StatelessWidget {
-  const _FollowChip({required this.following, required this.onTap});
-  final bool following;
+  const _FollowChip({required this.ink, required this.onTap});
+  final Color ink;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.palette.accent;
     return Tap(
       onTap: onTap,
       scale: 0.94,
-      semanticLabel: following ? 'Following, tap to unfollow' : 'Follow',
-      child: AnimatedContainer(
-        duration: Motion.quick,
-        curve: Motion.out,
-        height: 28,
+      semanticLabel: 'Follow',
+      child: Container(
+        height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: following ? Colors.white.withValues(alpha: 0.10) : accent,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: following ? Colors.white.withValues(alpha: 0.28) : accent,
-          ),
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(color: ink.withValues(alpha: 0.6)),
         ),
         child: Text(
-          following ? 'FOLLOWING' : 'FOLLOW',
-          style: AppText.mono(
-            10,
-            color: following ? AppColors.cream : AppColors.base,
-            weight: FontWeight.w500,
-            letterSpacing: 0.6,
-          ),
+          'Follow',
+          style: AppText.manrope(12, weight: FontWeight.w700, color: ink),
         ),
       ),
     );
@@ -1012,7 +1204,7 @@ class _MetaChip extends StatelessWidget {
       child: Text(
         label,
         style: AppText.mono(
-          9,
+          10,
           color: color ?? AppColors.cream,
           weight: filled || color != null ? FontWeight.w500 : FontWeight.w400,
           letterSpacing: 0.5,
@@ -1022,18 +1214,22 @@ class _MetaChip extends StatelessWidget {
   }
 }
 
-/// Piece count and total price of the fit. Tapping opens "Shop the look" over the feed: each
-/// piece links to its product page.
+/// "Shop the look": the pieces' cut-outs, the total and the budget band in
+/// colour. Tapping opens the pieces over the feed; each links to its store.
 class _ShopStrip extends ConsumerWidget {
   const _ShopStrip({required this.outfit});
   final Outfit outfit;
 
+  static const _thumb = 34.0;
+  static const _inBudget = Color(0xFF7BE0A0);
+  static const _overBudget = Color(0xFFFFB27A);
+
   /// The server's budget band, said plainly, so a jump in price as the feed
   /// moves past the fits in budget doesn't come as a surprise.
-  static String _band(String? band) => switch (band) {
-    'in' => ' · in your budget',
-    'over' => ' · above your budget',
-    _ => '',
+  static (String, Color)? _band(String? band) => switch (band) {
+    'in' => ('in your budget', _inBudget),
+    'over' => ('above your budget', _overBudget),
+    _ => null,
   };
 
   @override
@@ -1041,6 +1237,11 @@ class _ShopStrip extends ConsumerWidget {
     final total = outfit.price;
     final n = outfit.pieces.length;
     final noun = n == 1 ? 'PIECE' : 'PIECES';
+    final faces = [
+      for (final p in outfit.pieces)
+        if (p.image != null && p.image!.isNotEmpty) p.image!,
+    ].take(3).toList();
+    final band = _band(outfit.budgetBand);
     return Tap(
       onTap: () {
         ref.read(feedProvider.notifier).signal(outfit.id, 'open');
@@ -1052,13 +1253,48 @@ class _ShopStrip extends ConsumerWidget {
       },
       semanticLabel: 'Shop the look: ${outfit.title}',
       scale: 0.98,
-      child: Glass(
-        radius: 16,
-        thickness: GlassThickness.thin,
-        shadow: false,
-        padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
+        decoration: BoxDecoration(
+          color: AppColors.base.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+        ),
         child: Row(
           children: [
+            if (faces.isNotEmpty) ...[
+              SizedBox(
+                width: _thumb + (_thumb - 10) * (faces.length - 1),
+                height: _thumb,
+                child: Stack(
+                  children: [
+                    for (var i = faces.length - 1; i >= 0; i--)
+                      Positioned(
+                        left: i * (_thumb - 10),
+                        child: Container(
+                          width: _thumb,
+                          height: _thumb,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE8DF),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: AppColors.base,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: DripImage(
+                            faces[i],
+                            fit: BoxFit.contain,
+                            logicalWidth: _thumb,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1066,23 +1302,37 @@ class _ShopStrip extends ConsumerWidget {
                   Text(
                     'SHOP THE LOOK · $n $noun',
                     style: AppText.mono(
-                      9,
+                      10,
                       color: AppColors.muted,
-                      letterSpacing: 1,
+                      letterSpacing: 0.8,
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    total > 0
-                        ? '${formatPrice(total)} total${_band(outfit.budgetBand)}'
-                        : 'See the pieces',
+                  const SizedBox(height: 2),
+                  Text.rich(
+                    TextSpan(
+                      text: total > 0
+                          ? '${formatPrice(total)} total'
+                          : 'See the pieces',
+                      children: [
+                        if (total > 0 && band != null)
+                          TextSpan(
+                            text: ' · ${band.$1}',
+                            style: AppText.manrope(
+                              13,
+                              weight: FontWeight.w700,
+                              color: band.$2,
+                            ),
+                          ),
+                      ],
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.manrope(12, weight: FontWeight.w700),
+                    style: AppText.manrope(13, weight: FontWeight.w800),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             const Icon(
               Icons.arrow_forward_rounded,
               size: 18,
@@ -1097,11 +1347,13 @@ class _ShopStrip extends ConsumerWidget {
 
 // ──────────────────────────────────────────────────────────────── rail
 
-/// Like, comment, save, share: small glass buttons, no captions, so the rail
-/// stays out of the picture's way.
+/// Like, comment, save, share, report: Instagram's bare icons, no discs. A
+/// soft shadow keeps them legible on photos, and over a pale flat-lay they
+/// turn to dark ink. No blur, so nothing is redrawn while the page moves.
 class _ActionRail extends ConsumerWidget {
-  const _ActionRail({required this.outfit});
+  const _ActionRail({required this.outfit, required this.ink});
   final Outfit outfit;
+  final Color ink;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1113,7 +1365,9 @@ class _ActionRail extends ConsumerWidget {
       children: [
         _RailButton(
           icon: liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          color: liked ? AppColors.red : AppColors.cream,
+          color: liked ? AppColors.red : ink,
+          ink: ink,
+          size: 30,
           semantic: liked ? 'Unlike' : 'Like',
           onTap: () {
             Haptics.commit();
@@ -1122,12 +1376,15 @@ class _ActionRail extends ConsumerWidget {
         ),
         _RailButton(
           icon: Icons.mode_comment_outlined,
+          color: ink,
+          ink: ink,
           semantic: 'Comments',
           onTap: () => showAfterBeta(context, 'Comments'),
         ),
         _RailButton(
           icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-          color: saved ? context.palette.accent : AppColors.cream,
+          color: saved ? context.palette.accent : ink,
+          ink: ink,
           semantic: saved ? 'Remove from saved' : 'Save',
           onTap: () {
             Haptics.commit();
@@ -1135,12 +1392,18 @@ class _ActionRail extends ConsumerWidget {
           },
         ),
         _RailButton(
-          icon: Icons.ios_share_rounded,
+          icon: Icons.send_outlined,
+          color: ink,
+          ink: ink,
+          size: 25,
           semantic: 'Share',
           onTap: () => showAfterBeta(context, 'Sharing'),
         ),
         _RailButton(
-          icon: Icons.bug_report_outlined,
+          icon: Icons.outlined_flag_rounded,
+          color: ink.withValues(alpha: 0.85),
+          ink: ink,
+          size: 24,
           semantic: 'Report a bug',
           onTap: () =>
               showReportBug(context, screen: 'scroll', fitId: outfit.id),
@@ -1155,48 +1418,45 @@ class _RailButton extends StatelessWidget {
     required this.icon,
     required this.semantic,
     required this.onTap,
-    this.color = AppColors.cream,
+    required this.color,
+    required this.ink,
+    this.size = 28,
   });
 
   final IconData icon;
   final Color color;
+
+  /// The rail's base colour: a shadow only behind light icons.
+  final Color ink;
+  final double size;
   final String semantic;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final light = ink.computeLuminance() > 0.5;
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(top: 6),
       child: Tap(
         onTap: onTap,
-        scale: 0.88,
+        scale: 0.86,
         semanticLabel: semantic,
-        // A 44pt target around a 40pt glass disc.
         child: SizedBox(
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           child: Center(
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Glass(
-                radius: 20,
-                thickness: GlassThickness.thin,
-                shadow: false,
-                child: Center(
-                  child: AnimatedSwitcher(
-                    duration: Motion.quick,
-                    switchInCurve: Curves.easeOutBack,
-                    transitionBuilder: (c, a) =>
-                        ScaleTransition(scale: a, child: c),
-                    child: Icon(
-                      icon,
-                      key: ValueKey(icon),
-                      size: 21,
-                      color: color,
-                    ),
-                  ),
-                ),
+            child: AnimatedSwitcher(
+              duration: Motion.quick,
+              switchInCurve: Curves.easeOutBack,
+              transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
+              child: Icon(
+                icon,
+                key: ValueKey(icon),
+                size: size,
+                color: color,
+                shadows: light
+                    ? const [Shadow(color: Color(0x8C000000), blurRadius: 10)]
+                    : null,
               ),
             ),
           ),

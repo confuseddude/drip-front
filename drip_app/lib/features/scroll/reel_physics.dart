@@ -33,9 +33,11 @@ class ReelPhysics extends ScrollPhysics {
   ReelPhysics applyTo(ScrollPhysics? ancestor) =>
       ReelPhysics(paging, parent: buildParent(ancestor));
 
+  /// Critically damped, so it never floats past the page; stiff enough to
+  /// land in about 280 ms.
   @override
   SpringDescription get spring =>
-      SpringDescription.withDampingRatio(mass: 0.5, stiffness: 210, ratio: 1);
+      SpringDescription.withDampingRatio(mass: 0.5, stiffness: 260, ratio: 1);
 
   /// The page a swipe released at [pixels] with [velocity] lands on.
   @visibleForTesting
