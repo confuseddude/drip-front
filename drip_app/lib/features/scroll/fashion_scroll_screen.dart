@@ -1227,8 +1227,8 @@ class _ShopStrip extends ConsumerWidget {
   /// The server's budget band, said plainly, so a jump in price as the feed
   /// moves past the fits in budget doesn't come as a surprise.
   static (String, Color)? _band(String? band) => switch (band) {
-    'in' => ('in your budget', _inBudget),
-    'over' => ('above your budget', _overBudget),
+    'in' => ('in budget', _inBudget),
+    'over' => ('over budget', _overBudget),
     _ => null,
   };
 
