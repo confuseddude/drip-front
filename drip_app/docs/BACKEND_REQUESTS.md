@@ -3,6 +3,145 @@
 From the Flutter session, for the backend session. Newest first. Each request says what the app
 does today without it, so nothing is blocked.
 
+## 2026-11-07: the pivot to sharing, and creators in the feed (founder-approved direction)
+
+**The founder's decision.** Drip stops building its own social network. Growth comes from the
+places people already talk (WhatsApp, Instagram, Discord, Snapchat), so **anything worth sharing
+gets a share button, and sharing has as little friction as possible**. The app drops Home's story
+row and the Scroll's comments. Neither had a backend, so nothing to remove on your side.
+
+The one social loop left is a game around Studio:
+1. A user makes a fit in Studio, tags its category and publishes it.
+2. Published fits go into other users' feeds.
+3. Likes on them make the creator's **score**, shown on their profile.
+4. People can follow a creator. When that creator publishes a new fit, followers are pinged and
+   the fit goes into their feed.
+
+What the app needs, most important first:
+
+### 1. Share links with a rich preview (needed first: it's the growth engine)
+
+A link pasted into WhatsApp, Discord, iMessage, Telegram, X or Instagram DMs must unfurl as the
+fit's picture with the Drip logo, the fit's name, and "N pieces · ₹X". Tapping it opens the fit in
+the app if it's installed, and a web page with the fit otherwise.
+
+- **Public URLs** on a domain we own (the founder picks it; `*.run.app` works for testing):
+  - `/f/:id` for a feed fit or a published Studio fit;
+  - `/s/:token` for a private Studio fit the owner chose to share (an unguessable token, so the
+    fit stays private everywhere else);
+  - `/u/:username` for a creator's profile.
+  Short ids, not uuids, so the links look good in a chat.
+- **`POST /share { kind: fit|studioFit|profile, id, channel? }` → `{ url, imageUrl, text }`.**
+  Signed in. `text` is a ready message ("Moto night flare on Drip: 4 pieces, ₹8,450"). `channel` is
+  `whatsapp|instagram|discord|snapchat|copy|system|other`, for attribution. It returns at once; render
+  the image in the background if it isn't cached. A link must also work without this call, so a
+  deterministic URL from the id is fine.
+- **The page at each URL**, server-rendered HTML, fast and with no JS needed for the preview:
+  - Open Graph tags: `og:title`, `og:description`, `og:image` (absolute https, **1200×630 JPEG
+    under 300 KB** so WhatsApp shows the big preview), `og:image:width/height`, `og:url`,
+    `og:site_name: Drip`, `og:type: website`.
+  - Also `twitter:card: summary_large_image` (Discord and X use it) and
+    `<meta name="theme-color">` with the brand red (Discord's embed stripe).
+  - The body: the fit picture, its pieces with their shop links (placement `share`, so
+    Cuelinks attributes them), and "Open in Drip" / "Get Drip" (the Play Store link for now).
+- **The preview image** (`og:image`): the fit's collage on the brand ground with the Drip wordmark
+  and the name, pieces and price. Cache it in public storage or the CDN, and re-render it when a
+  Studio fit changes. The app also wants a **portrait 1080×1920 version** (`?format=story`) for
+  Instagram and Snapchat stories, where the app shares an image rather than a link.
+- **App links.** Serve `/.well-known/assetlinks.json` for package `com.drip.drip`, with the
+  SHA-256 fingerprints of the debug key, the upload key and Play's app-signing key, so Android
+  opens `/f/…` links straight in the app. Add `apple-app-site-association` later for iOS. The app
+  will route `/f/:id`, `/s/:token` and `/u/:username`.
+- **`GET /share/:token`** (public) → the shared Studio fit, for the app to open from a link.
+- **Count it.** Log `share_created` (kind, channel) and `share_opened` (from the page, and
+  whether it went to the app or the store) in PostHog, so the founder sees which channel grows Drip.
+
+### 2. Publish a Studio fit to the feed (needed)
+
+- **`POST /studio/fits/:id/publish { category, aesthetic?, caption? }` → `PublishedFit`.**
+  `category` is an occasion id from `/meta` (required; the app makes the user pick one).
+  `aesthetic` is an aesthetic id. `caption` is at most 140 chars.
+  - Render the fit's collage from its pieces and boxes, the same look as catalogue collages, so it
+    sits in the Scroll like any other fit.
+  - Publishing again after an edit updates it. `DELETE /studio/fits/:id/publish` takes it out of
+    feeds.
+- **Wardrobe pieces in a published fit.** They are the user's own photos, so publishing makes those
+  cut-outs public.
+  - The app will warn and ask first. Return `usesWardrobe: true` on the `UserFit` so it knows when.
+  - Wardrobe pieces have no shop link; mark them `owned: true, buyUrl: null` on the published fit.
+- **Limits and safety.** At most 10 publishes a day. Garments must be published catalogue
+  pieces, or the user's own wardrobe items. `/admin/review` gets a queue of new creator fits, so the
+  founder can take one down. Say whether they go live at once or after review: the app copes with
+  both (it can show "In review").
+- **`UserFit` gains** `published: bool`, `publishedAt`, `category`, `likeCount`, `status:
+  draft|in_review|live|removed`.
+
+### 3. Creators in the Scroll (needed)
+
+- **Published fits enter `/scroll`**, mixed with Drip's curated fits by the same ranking.
+  - **Fits from creators the user follows go first** for the first day after they're published.
+  - Keep the budget bands.
+- **`Outfit` gains:**
+  - `source: "drip" | "creator"`;
+  - `creator: { id, username, displayName, avatarUrl, score, isFollowing } | null`;
+  - `likeCount`;
+  - `caption`;
+  - `category`.
+  The app shows the creator's handle, Follow and the like count. Curated fits keep `@drip` and no
+  count.
+- **Optional:** `GET /scroll?following=true`, a feed of only followed creators. It would make a
+  "Following" filter possible, but it isn't needed for v1.
+
+### 4. Score, profiles and follows (needed)
+
+- **The score.** Based on likes on the creator's published fits. The formula is your call, as long
+  as it's explainable in one line in the app ("Likes on your fits, with recent ones counting
+  more"). Recompute it on a schedule. The app shows `score`, and `rank` if you have one ("#12 this
+  week").
+- **`GET /users/:username`** → `{ username, displayName, avatarUrl, bio?, score, likesTotal,
+  fitsCount, followers, following, isFollowing, isMe }`.
+  **`GET /users/:username/fits?cursor=`** → their live published fits, as `Outfit`s.
+- **`PUT` / `DELETE /users/:username/follow`** → 204, idempotent.
+  **`GET /me/followers`** and **`GET /me/following?cursor=`** → lists of `{ username,
+  displayName, avatarUrl, score, isFollowing }`.
+- **A public profile photo.** Today's avatars are private and only feed Gen. A creator needs a
+  public one: `POST /me/profile-photo/upload-url` + `POST /me/profile-photo`, stored publicly and
+  removed on account deletion. Also `PATCH /me { bio? }` (at most 150 chars).
+- **`GET /me`** adds the same `score`, `followers`, `following` and `fitsCount`.
+- **Blocking and reporting.** Add `POST /users/:username/block`, which hides their fits from me.
+  `/reports` should accept `userId` and creator `fitId`s, so a bad fit or user can be reported.
+
+### 5. Pings (needed for "they made a new fit")
+
+- **Push tokens.** `POST /me/push-tokens { token, platform: android|ios }` and `DELETE
+  /me/push-tokens/:token`. This is the FCM request from 2026-10-21 (#4), now needed. The founder
+  sets up the Firebase project and the app adds `google-services.json`.
+- **Pushes to send:**
+  - a creator you follow published a fit (open `/f/:id`);
+  - your fit got its 10th, 50th or 100th like (open your profile);
+  - someone followed you;
+  - your import is ready (from 2026-10-21).
+  Payload: `{ type, route }`. Batch them: at most one "new fits" push per creator per day.
+- **`GET /activity?cursor=`** → `[{ id, type: new_fit|liked|followed|milestone, actor?,
+  fitId?, createdAt, read }]` and `POST /activity/read`. The app already has an Activity screen
+  running on mock data.
+- **`PATCH /me { notify: { newFits, likes, follows } }`**, so users can turn each one off.
+
+### What the app does meanwhile
+
+The redesign is going to the founder for approval first, so nothing is blocked:
+- Share buttons will use the system share sheet with the deterministic `/f/:id` link and a story
+  image drawn on the phone. They switch to `POST /share` once it exists.
+- Creator handles, follows and scores run on mock data until #3–#4 are live. The app treats every
+  new `Outfit` field as optional, so curated fits keep working as they are.
+
+### Decisions the founder still has to make
+
+- The share domain.
+- Whether creator fits go live at once or after review.
+- The score formula, if they want a say in it.
+- Setting up the Firebase project for push.
+
 ## 2026-11-04: where things stand after the move to Cloud Run
 
 The API now runs on Google Cloud Run (`https://drip-api-cjtz5x4sgq-as.a.run.app`); `config/dev.json`
