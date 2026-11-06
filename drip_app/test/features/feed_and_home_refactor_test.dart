@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fakes.dart';
 import '../test_fonts.dart';
+import '../support/home_scroll.dart';
 
 /// The feed's collapsed/expanded post, the collage framing, Home without
 /// weather (date · time · day/night) and the theme-safe Selfie Coordinator
@@ -128,7 +129,8 @@ void main() {
       expect(find.textContaining('SHOP THE LOOK'), findsOneWidget);
       expect(find.textContaining('✦ DRIP'), findsNothing);
       expect(find.text('MINIMAL'), findsNothing);
-      for (final l in ['Like', 'Comments', 'Save', 'Share']) {
+      expect(tapLabelled('Comments'), findsNothing);
+      for (final l in ['Like', 'Save', 'Send']) {
         expect(tapLabelled(l), findsOneWidget, reason: '$l stays on the rail');
       }
 
@@ -181,9 +183,9 @@ void main() {
       await settle(t, 400);
       expect(container.read(fitMarksProvider).isSaved('o_gray'), isTrue);
       await settle(t, 3000);
-      await t.tap(tapLabelled('Share'));
-      await settle(t, 300);
-      expect(find.text('SHARING IS COMING AFTER BETA ✦'), findsOneWidget);
+      await t.tap(tapLabelled('Send'));
+      await settle(t, 600);
+      expect(find.text('SEND THIS FIT'), findsOneWidget);
     });
 
     testWidgets('the shop strip opens the pieces over the feed', (t) async {
@@ -283,7 +285,7 @@ void main() {
       expect(find.textContaining('°'), findsNothing);
       expect(find.textContaining('COLOURS OF THE DAY'), findsNothing);
       expect(find.textContaining('Rain'), findsNothing);
-      expect(find.text('ASK TAYLOR  →'), findsOneWidget);
+      expect(find.text('Ask Taylor'), findsOneWidget);
     });
 
     testWidgets('shows day in the afternoon', (t) async {
@@ -314,16 +316,20 @@ void main() {
   group('selfie coordinator tile', () {
     testWidgets('is the entry to the guided selfie', (t) async {
       await boot(t);
+      await scrollHomeTo(t, find.text('Selfie Coordinator'));
       expect(find.text('Selfie Coordinator'), findsOneWidget);
-      expect(find.text('GUIDED SELFIE'), findsOneWidget);
+      expect(find.text('Guided selfie'), findsOneWidget);
       await t.tap(tapLabelled('Selfie Coordinator'));
       await settle(t, 900);
       expect(find.byType(SelfieScreen), findsOneWidget);
     });
 
-    testWidgets('paints the theme-safe outline', (t) async {
+    testWidgets('is a block of the accent with ink that reads on it', (
+      t,
+    ) async {
       for (final skin in [DripSkin.retroCyber, DripSkin.vaultCream]) {
         await boot(t, skin: skin);
+        await scrollHomeTo(t, find.text('Selfie Coordinator'));
         final box = t.widget<Container>(
           find
               .descendant(
@@ -332,11 +338,14 @@ void main() {
               )
               .first,
         );
-        final deco = box.decoration! as BoxDecoration;
+        final ground = (box.decoration! as BoxDecoration).color!;
         final p = AppTheme.build(skin).extension<DripPalette>()!;
+        expect(ground, p.accent);
+        final label = t.widget<Text>(find.text('Selfie Coordinator'));
         expect(
-          (deco.border! as Border).top.color,
-          selfieCoordinatorBorderColor(p),
+          contrastRatio(label.style!.color!, ground),
+          greaterThanOrEqualTo(4.5),
+          reason: skin.label,
         );
       }
     });

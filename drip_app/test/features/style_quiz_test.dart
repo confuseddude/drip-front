@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fakes.dart';
 import '../test_fonts.dart';
+import '../support/home_scroll.dart';
 
 /// The style quiz on Home: ten multiple-choice taps, each answer moving on by
 /// itself, saved into the account's onboarding prefs without touching the
@@ -62,7 +63,8 @@ void main() {
     t,
   ) async {
     await boot(t);
-    expect(find.text('10 QUICK TAPS'), findsOneWidget);
+    await scrollHomeTo(t, find.text('10 quick taps'));
+    expect(find.text('10 quick taps'), findsOneWidget);
     await openFromHome(t);
 
     for (final (i, q) in styleQuiz.indexed) {
@@ -90,7 +92,7 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('RETAKE'), findsOneWidget);
+    expect(find.text('Retake it'), findsOneWidget);
   });
 
   testWidgets('skip and back move between questions without answering', (

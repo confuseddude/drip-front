@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fakes.dart';
 import '../test_fonts.dart';
+import '../support/home_scroll.dart';
 
 /// Covers the refinement pass: floating nav (tap + swipe), Home → Fashion
 /// Scroll, reel interactions, the theme system and the launch sequence.
@@ -237,16 +238,17 @@ void main() {
       expect(find.text('GARMENT CAPTURE'), findsOneWidget);
     });
 
-    testWidgets('only your own story circle is shown in v1', (t) async {
+    testWidgets('Home has no stories: Drip shares out instead', (t) async {
       await openHome(t);
-      expect(find.text('Your story'), findsOneWidget);
-      expect(find.text('@sofiamae'), findsNothing);
+      expect(find.text('Your story'), findsNothing);
+      expect(find.text("TODAY'S PICK"), findsOneWidget);
     });
   });
 
   group('home → fashion scroll', () {
     testWidgets('an occasion card opens the Scroll on fits for it', (t) async {
       await openHome(t);
+      await scrollHomeTo(t, find.text('SHOP BY OCCASION'));
       expect(find.text('SHOP BY OCCASION'), findsOneWidget);
       await t.ensureVisible(find.text('DATE NIGHT'));
       await settle(t, 300);
@@ -311,20 +313,21 @@ void main() {
       expect(lib.saved.map((o) => o.id), contains('o_gray'));
     });
 
-    testWidgets('comments and sharing say they come after the beta', (t) async {
+    testWidgets('no comments; Send opens the share sheet with the link', (
+      t,
+    ) async {
       await boot(t);
       await settle(t, 1600);
       container.read(routerProvider).go('/scroll?id=o_gray');
       await settle(t, 900);
-      await t.tap(tapLabelled('Share'));
-      await settle(t, 300);
-      expect(find.text('SHARING IS COMING AFTER BETA ✦'), findsOneWidget);
-      expect(find.text('SHARE FIT'), findsNothing, reason: 'no sheet opened');
-      await settle(t, 2600); // the toast times out
-      await t.tap(tapLabelled('Comments'));
-      await settle(t, 300);
-      expect(find.text('COMMENTS IS COMING AFTER BETA ✦'), findsOneWidget);
-      expect(find.text('COMMENTS'), findsNothing, reason: 'no sheet opened');
+      expect(tapLabelled('Comments'), findsNothing);
+      await t.tap(tapLabelled('Send'));
+      await settle(t, 600);
+      expect(find.text('SEND THIS FIT'), findsOneWidget);
+      expect(find.textContaining('/f/o_gray'), findsOneWidget);
+      for (final l in ['WhatsApp', 'Stories', 'Copy link', 'More']) {
+        expect(tapLabelled(l), findsOneWidget, reason: l);
+      }
     });
 
     testWidgets('scrolling past the last loaded fit fetches the next page', (

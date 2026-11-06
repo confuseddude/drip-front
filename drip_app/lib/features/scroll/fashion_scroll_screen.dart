@@ -26,6 +26,8 @@ import '../outfits/fit_actions.dart';
 import '../outfits/outfit_controller.dart';
 import '../outfits/shop_sheet.dart';
 import '../report/report_bug_sheet.dart';
+import '../share/share_sheet.dart';
+import '../../core/widgets/image_tint.dart';
 import 'fit_pieces_sheet.dart';
 import 'reel_physics.dart';
 import 'shop_the_look.dart';
@@ -1347,9 +1349,11 @@ class _ShopStrip extends ConsumerWidget {
 
 // ──────────────────────────────────────────────────────────────── rail
 
-/// Like, comment, save, share, report: Instagram's bare icons, no discs. A
-/// soft shadow keeps them legible on photos, and over a pale flat-lay they
-/// turn to dark ink. No blur, so nothing is redrawn while the page moves.
+/// Like, save, send, report: Instagram's bare icons, no discs. A soft shadow
+/// keeps them legible on photos, and over a pale flat-lay they turn to dark
+/// ink. No blur, so nothing is redrawn while the page moves. There are no
+/// comments: Drip's conversations happen where people already talk, so
+/// "Send" is the loudest thing on the rail.
 class _ActionRail extends ConsumerWidget {
   const _ActionRail({required this.outfit, required this.ink});
   final Outfit outfit;
@@ -1375,13 +1379,6 @@ class _ActionRail extends ConsumerWidget {
           },
         ),
         _RailButton(
-          icon: Icons.mode_comment_outlined,
-          color: ink,
-          ink: ink,
-          semantic: 'Comments',
-          onTap: () => showAfterBeta(context, 'Comments'),
-        ),
-        _RailButton(
           icon: saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
           color: saved ? context.palette.accent : ink,
           ink: ink,
@@ -1391,14 +1388,7 @@ class _ActionRail extends ConsumerWidget {
             toggleSaveWithToast(context, ref, outfit.id);
           },
         ),
-        _RailButton(
-          icon: Icons.send_outlined,
-          color: ink,
-          ink: ink,
-          size: 25,
-          semantic: 'Share',
-          onTap: () => showAfterBeta(context, 'Sharing'),
-        ),
+        _SendButton(ink: ink, onTap: () => showShareFit(context, outfit)),
         _RailButton(
           icon: Icons.outlined_flag_rounded,
           color: ink.withValues(alpha: 0.85),
@@ -1409,6 +1399,65 @@ class _ActionRail extends ConsumerWidget {
               showReportBug(context, screen: 'scroll', fitId: outfit.id),
         ),
       ],
+    );
+  }
+}
+
+/// The rail's one filled button: a red disc that opens "Send this fit".
+class _SendButton extends StatelessWidget {
+  const _SendButton({required this.ink, required this.onTap});
+  final Color ink;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.palette.accent;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Tap(
+        onTap: onTap,
+        scale: 0.88,
+        semanticLabel: 'Send',
+        child: SizedBox(
+          width: 56,
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: accent,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.4),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.send_outlined,
+                  size: 23,
+                  color: inkOn(accent),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Send',
+                style: AppText.manrope(12, weight: FontWeight.w800, color: ink)
+                    .copyWith(
+                      shadows: ink.computeLuminance() > 0.5
+                          ? const [
+                              Shadow(color: Color(0x8C000000), blurRadius: 8),
+                            ]
+                          : null,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

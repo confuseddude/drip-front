@@ -11,6 +11,12 @@ abstract final class Env {
     'API_BASE_URL',
     defaultValue: 'https://drip-api-cjtz5x4sgq-as.a.run.app',
   );
+  /// Where share links point (`<base>/f/<id>`). Until Drip has its own
+  /// domain the API answers these pages itself, so it defaults to the API.
+  static const shareBaseUrl = String.fromEnvironment(
+    'SHARE_BASE_URL',
+    defaultValue: apiBaseUrl,
+  );
   static const supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
     defaultValue: 'https://arpqhpnmuifqjtbqomrh.supabase.co',

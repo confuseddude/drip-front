@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fakes.dart';
 import '../test_fonts.dart';
+import '../support/home_scroll.dart';
 
 /// Records every way the account could have received the selfie (the only
 /// image upload left on the account is the profile photo).
@@ -57,10 +58,7 @@ Future<void> _boot(
           final next = queue.isEmpty ? null : queue.removeAt(0);
           if (next is Exception) throw next;
           if (next is Uint8List) {
-            return XFile.fromData(
-              next,
-              path: 'selfie_a.jpg',
-            );
+            return XFile.fromData(next, path: 'selfie_a.jpg');
           }
           return null;
         }),
@@ -156,6 +154,7 @@ void main() {
     );
     _c.read(routerProvider).go('/home');
     await _settle(t, 1500);
+    await scrollHomeTo(t, find.text('SHOP BY OCCASION'));
     final cards = t.widgetList<OccasionCard>(find.byType(OccasionCard));
     expect(
       {
@@ -164,14 +163,13 @@ void main() {
       },
       {'clubs', 'golf'},
     );
-    // The two picked lead the wall: the first row, left then right.
+    // The two picked lead the row of posters, in their usual order.
     Rect at(String id) => t.getRect(
       find.byWidgetPredicate((w) => w is OccasionCard && w.occasion.id == id),
     );
     final clubs = at('clubs'), golf = at('golf'), date = at('date-night');
-    expect(clubs.top, lessThan(date.top));
     expect(clubs.left, lessThan(golf.left));
-    expect(golf.top, lessThan(at('concert').top));
+    expect(golf.left, lessThan(date.left));
     expect(find.text('YOURS FIRST'), findsOneWidget);
   });
 

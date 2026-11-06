@@ -95,7 +95,9 @@ void main() {
     go('/home');
     await settle(t, 4000);
     expect(find.text(text('home.camera')), findsNothing);
-    expect(find.text(text('home.tools')), findsOneWidget);
+    // The next tip in line that's on screen (the tools sit below today's
+    // pick, so it's the one about swiping the bar).
+    expect(find.text(text('nav.swipe')), findsOneWidget);
   });
 
   testWidgets('left alone, a tip fades by itself and counts as seen', (

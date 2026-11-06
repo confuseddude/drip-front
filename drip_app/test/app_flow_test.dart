@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fakes.dart';
 import 'test_fonts.dart';
+import 'support/home_scroll.dart';
 
 /// Pumps in small steps: the app has looping animations, so `pumpAndSettle`
 /// would never return.
@@ -135,9 +136,10 @@ void main() {
     await settle(t, 900);
 
     // Home feed.
-    expect(find.text('Your story'), findsOneWidget);
+    expect(find.text("TODAY'S PICK"), findsOneWidget);
+    expect(find.text('Ask Taylor'), findsOneWidget);
+    await scrollHomeTo(t, find.text('SHOP BY OCCASION'));
     expect(find.text('SHOP BY OCCASION'), findsOneWidget);
-    expect(find.text('ASK TAYLOR  →'), findsOneWidget);
 
     // Like the first fit in the Fashion Scroll, then come back Home.
     final first = container.read(feedProvider).requireValue.items.first;
@@ -273,7 +275,7 @@ void main() {
   ) async {
     await boot(t, signedIn: true, prefs: {'session.onboarded': true});
     await settle(t, 3200);
-    expect(find.text('Your story'), findsOneWidget);
+    expect(find.text("TODAY'S PICK"), findsOneWidget);
   });
 
   testWidgets(
